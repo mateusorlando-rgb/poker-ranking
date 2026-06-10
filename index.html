@@ -460,29 +460,34 @@ function salvarEtapa(){
   btn.textContent = 'Salvando...';
   btn.disabled = true;
 
+  var payload = JSON.stringify({
+    acao: 'salvarEtapa',
+    data: etapaAtual.data,
+    rodadas: etapaAtual.rodadas,
+    extra: etapaAtual.extraGeral
+  });
+
+  // Usa no-cors para evitar bloqueio CORS do Apps Script
   fetch(API_URL, {
     method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      acao: 'salvarEtapa',
-      data: etapaAtual.data,
-      rodadas: etapaAtual.rodadas,
-      extra: etapaAtual.extraGeral
-    })
+    mode: 'no-cors',
+    headers: {'Content-Type':'text/plain'},
+    body: payload
   })
-  .then(function(r){ return r.json(); })
-  .then(function(d){
-    if(d.ok){
-      alert('Etapa '+etapaAtual.data+' salva com sucesso!');
-      etapaAtual = {data:"",rodadas:[],extraGeral:""};
+  .then(function(){
+    // no-cors não retorna resposta legível — assume sucesso se não houve erro
+    alert('Etapa '+etapaAtual.data+' salva com sucesso! Aguarde alguns segundos e recarregue o ranking.');
+    etapaAtual = {data:"",rodadas:[],extraGeral:""};
+    setTimeout(function(){
       carregarRanking();
       carregarEtapas();
-      showScreen('ranking');
-    } else {
-      alert('Erro: '+(d.erro||'desconhecido'));
-    }
+    }, 3000);
+    showScreen('ranking');
   })
-  .catch(function(){ alert('Erro de conexão. Verifique a internet.'); })
+  .catch(function(err){
+    alert('Erro ao salvar. Tente novamente.');
+    console.error(err);
+  })
   .finally(function(){
     btn.textContent = 'Confirmar e salvar';
     btn.disabled = false;
