@@ -34,7 +34,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .player-name{font-size:14px;font-weight:500;flex:1}
 .fichas-wrap{display:flex;flex-direction:column;align-items:flex-end}
 .fichas-input{width:90px;border:1.5px solid #D3D1C7;border-radius:8px;padding:7px 10px;font-size:14px;text-align:center;background:#F8F8F6;color:#2C2C2A;font-weight:500}
-.fichas-input.pos{border-color:#8DB86A;background:#EAF3DE;color:#1A4A08;font-weight:600}
+.fichas-input.pos{border-color:#27500A;background:#C0DD97;color:#1A4A08;font-weight:700}
 .fichas-input.neg{border-color:#D98080;background:#FFF0F0;color:#A32D2D;font-weight:600}
 .fichas-input.zero{border-color:#D3D1C7;background:#F8F8F6;color:#888780}
 .fichas-label{font-size:10px;color:#888780;margin-top:2px;text-align:right}
@@ -106,7 +106,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </div>
 <div class="content">
 
-  <!-- RANKING -->
   <div id="s-ranking" class="screen active">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">Líder</div><div class="stat-val" id="stat-lider" style="font-size:16px">—</div><div class="stat-sub" id="stat-lider-pts">— pts</div></div>
@@ -115,12 +114,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <div class="card"><div id="ranking-list"><div class="loader">Carregando ranking...</div></div></div>
   </div>
 
-  <!-- ETAPAS -->
   <div id="s-etapas" class="screen">
     <div class="card"><div id="etapas-list"><div class="loader">Carregando etapas...</div></div></div>
   </div>
 
-  <!-- ADMIN -->
   <div id="s-admin" class="screen">
     <div id="rascunho-aviso" style="display:none" class="recorde-box">
       ⚠️ Etapa em andamento: <strong id="rascunho-data"></strong><br>
@@ -138,7 +135,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <div class="recorde-box">🏆 Recorde anual: <strong id="recorde-display">—</strong></div>
   </div>
 
-  <!-- SELEÇÃO -->
   <div id="s-selecao" class="screen">
     <div class="card">
       <div class="section-header">
@@ -151,7 +147,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <button class="btn btn-outline" onclick="showScreen('admin')">Voltar</button>
   </div>
 
-  <!-- RODADAS -->
   <div id="s-rodada" class="screen">
     <div class="round-tabs" id="round-tabs"></div>
     <div id="saldo-bar" class="saldo-bar saldo-ok">Total: 0 ✓</div>
@@ -167,7 +162,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <button class="btn btn-danger" onclick="cancelarEtapa()">Cancelar etapa</button>
   </div>
 
-  <!-- RESULTADO -->
   <div id="s-resultado" class="screen">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">Rodadas</div><div class="stat-val" id="res-rodadas">0</div><div class="stat-sub">registradas</div></div>
@@ -181,7 +175,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
 </div>
 
-<!-- PIN -->
 <div class="pin-overlay" id="pin-overlay">
   <div class="pin-box">
     <div class="pin-title">Modo administrador</div>
@@ -193,7 +186,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   </div>
 </div>
 
-<!-- MODAL JOGADORES -->
 <div class="modal-overlay" id="modal-jogadores">
   <div class="modal-box">
     <div class="modal-title">Adicionar jogador à rodada</div>
@@ -376,7 +368,7 @@ function renderRodada(){
   var jogs=etapaAtual.rodadas[rodadaAtual];
   document.getElementById('jogadores-rodada').innerHTML=jogs.map(function(j,i){
     var v=j.fichas, cls=v>0?'pos':v<0?'neg':'zero';
-    return '<div class="player-row"><div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div><div class="player-name">'+j.nome+'</div><div class="fichas-wrap"><input class="fichas-input '+cls+'" type="number" value="'+v+'" oninput="atualizarFicha('+i+',this)"><div class="fichas-label">fichas</div></div></div>';
+    return '<div class="player-row"><div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div><div class="player-name">'+j.nome+'</div><div class="fichas-wrap"><input class="fichas-input '+cls+'" type="number" placeholder="—" '+(v!==0?'value="'+v+'"':'')+' oninput="atualizarFicha('+i+',this)"><div class="fichas-label">fichas</div></div></div>';
   }).join('');
   atualizarSaldo();
 }
