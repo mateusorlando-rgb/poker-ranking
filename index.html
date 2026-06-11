@@ -107,10 +107,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 <div class="content">
 
   <div id="s-ranking" class="screen active">
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-label">Líder</div><div class="stat-val" id="stat-lider" style="font-size:16px">—</div><div class="stat-sub" id="stat-lider-pts">— pts</div></div>
-      <div class="stat-card"><div class="stat-label">Etapas realizadas</div><div class="stat-val" id="stat-etapas">—</div><div class="stat-sub">de 24 no ano</div></div>
-    </div>
     <div class="card"><div id="ranking-list"><div class="loader">Carregando ranking...</div></div></div>
   </div>
 
@@ -220,10 +216,8 @@ function carregarRanking(){
     .then(function(r){ return r.json(); })
     .then(function(d){
       var jogs=d.jogadores||[];
-      var ef=(d.etapas||[]).filter(function(e){ return e.status==='Finalizada'; }).length;
-      document.getElementById('stat-etapas').textContent=ef;
+      var ef=(d.etapas||[]).length;
       document.getElementById('etapa-label').textContent=ef+' etapas realizadas';
-      if(jogs.length){ document.getElementById('stat-lider').textContent=jogs[0].nome; document.getElementById('stat-lider-pts').textContent=jogs[0].total+' pts'; }
       renderRanking(jogs);
     })
     .catch(function(){ document.getElementById('ranking-list').innerHTML='<div class="empty">Sem conexão.</div>'; document.getElementById('etapa-label').textContent='Offline'; });
@@ -407,12 +401,33 @@ function cancelarEtapa(){
 }
 
 function calcularResultado(){
-  var totFichas={};
-  etapaAtual.rodadas.forEach(function(rod){ rod.forEach(function(j){ if(!(j.nome in totFichas)) totFichas[j.nome]=0; if(j.fichas>0) totFichas[j.nome]+=j.fichas; }); });
-  var ranking=Object.keys(totFichas).map(function(n){ return {nome:n,fichas:totFichas[n]}; }).sort(function(a,b){ return b.fichas-a.fichas; });
+  // Saldo total por jogador (positivos + negativos)
+  var saldoFichas={};
+  etapaAtual.rodadas.forEach(function(rod){
+    rod.forEach(function(j){
+      if(!(j.nome in saldoFichas)) saldoFichas[j.nome]=0;
+      saldoFichas[j.nome]+=j.fichas;
+    });
+  });
+
+  // Maior stack em uma única rodada (para ponto extra)
+  var maiorStackVal=-Infinity, maiorStackJog="";
+  etapaAtual.rodadas.forEach(function(rod){
+    rod.forEach(function(j){
+      if(j.fichas>maiorStackVal){ maiorStackVal=j.fichas; maiorStackJog=j.nome; }
+    });
+  });
+
+  // Classificação por saldo (maior para menor)
+  var ranking=Object.keys(saldoFichas)
+    .map(function(n){ return {nome:n, fichas:saldoFichas[n]}; })
+    .sort(function(a,b){ return b.fichas-a.fichas; });
+
+  // Novo recorde anual (baseado no maior stack de uma rodada)
   var novoRecorde=null;
-  if(ranking.length&&ranking[0].fichas>recordeAtual.fichas) novoRecorde={nome:ranking[0].nome,fichas:ranking[0].fichas};
-  return {ranking:ranking,novoRecorde:novoRecorde};
+  if(maiorStackVal>recordeAtual.fichas) novoRecorde={nome:maiorStackJog, fichas:maiorStackVal};
+
+  return {ranking:ranking, novoRecorde:novoRecorde, maiorStack:{nome:maiorStackJog, fichas:maiorStackVal}};
 }
 
 function verResultado(){
@@ -420,8 +435,11 @@ function verResultado(){
   document.getElementById('res-rodadas').textContent=etapaAtual.rodadas.length;
   document.getElementById('res-jogadores').textContent=r.ranking.length;
   document.getElementById('resultado-list').innerHTML=r.ranking.map(function(j,i){
-    var pts=getPontos(i+1), pc=i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
-    return '<div class="rank-row"><div class="pos '+pc+'">'+(i+1)+'</div><div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div><div class="player-name">'+j.nome+'<br><span style="font-size:11px;color:#888780">'+j.fichas.toLocaleString('pt-BR')+' fichas</span></div><div class="pts">'+pts+'</div></div>';
+    var pts=getPontos(i+1)+(j.nome===r.maiorStack.nome?1:0);
+    var pc=i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
+    var sinal=j.fichas>0?'+':j.fichas<0?'':' ';
+    var stackBadge=j.nome===r.maiorStack.nome?'<span class="badge badge-green" style="margin-right:6px">+1 stack</span>':'';
+    return '<div class="rank-row"><div class="pos '+pc+'">'+(i+1)+'</div><div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div><div class="player-name">'+j.nome+'<br><span style="font-size:11px;color:#888780">saldo: '+sinal+j.fichas+' fichas</span></div>'+stackBadge+'<div class="pts">'+pts+'</div></div>';
   }).join('');
   var extraEl=document.getElementById('extra-resultado');
   if(r.novoRecorde){
@@ -430,7 +448,7 @@ function verResultado(){
       :'🏆 Novo recorde! '+r.novoRecorde.nome+' com '+r.novoRecorde.fichas.toLocaleString('pt-BR')+' fichas. +5 pts para '+r.novoRecorde.nome+', -5 pts de '+recordeAtual.jogador+'.';
     extraEl.innerHTML='<div class="recorde-box">'+msg+'</div>';
   } else {
-    extraEl.innerHTML='<div class="info-box">Recorde atual: '+recordeAtual.fichas.toLocaleString('pt-BR')+' fichas ('+recordeAtual.jogador+'). Sem novo recorde nesta etapa.</div>';
+    extraEl.innerHTML='<div class="info-box">Maior stack da etapa: '+r.maiorStack.nome+' com '+r.maiorStack.fichas.toLocaleString('pt-BR')+' fichas (+1 pt). Recorde anual: '+recordeAtual.fichas.toLocaleString('pt-BR')+' ('+recordeAtual.jogador+').</div>';
   }
   showScreen('resultado');
 }
@@ -440,7 +458,7 @@ function salvarEtapa(){
   var btn=document.querySelector('#s-resultado .btn-dark');
   btn.textContent='Salvando...'; btn.disabled=true;
   fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({acao:'salvarEtapa',data:etapaAtual.data,rodadas:etapaAtual.rodadas,ranking:r.ranking,novoRecorde:r.novoRecorde,recordeAtual:recordeAtual})
+    body:JSON.stringify({acao:'salvarEtapa',data:etapaAtual.data,rodadas:etapaAtual.rodadas,ranking:r.ranking,maiorStack:r.maiorStack,novoRecorde:r.novoRecorde,recordeAtual:recordeAtual})
   }).then(function(){
     if(r.novoRecorde){ recordeAtual=r.novoRecorde.nome!==recordeAtual.jogador?{fichas:r.novoRecorde.fichas,jogador:r.novoRecorde.nome}:{fichas:r.novoRecorde.fichas,jogador:recordeAtual.jogador}; }
     salvarRascunho(null);
