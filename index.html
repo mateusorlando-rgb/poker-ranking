@@ -34,8 +34,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .player-name{font-size:14px;font-weight:500;flex:1}
 .fichas-wrap{display:flex;flex-direction:column;align-items:flex-end}
 .fichas-input{width:90px;border:1.5px solid #D3D1C7;border-radius:8px;padding:7px 10px;font-size:14px;text-align:center;background:#F8F8F6;color:#2C2C2A;font-weight:500}
-.fichas-input.pos{border-color:#8DB86A;background:#F4FAF0;color:#27500A}
-.fichas-input.neg{border-color:#D98080;background:#FFF0F0;color:#A32D2D}
+.fichas-input.pos{border-color:#8DB86A;background:#EAF3DE;color:#1A4A08;font-weight:600}
+.fichas-input.neg{border-color:#D98080;background:#FFF0F0;color:#A32D2D;font-weight:600}
 .fichas-input.zero{border-color:#D3D1C7;background:#F8F8F6;color:#888780}
 .fichas-label{font-size:10px;color:#888780;margin-top:2px;text-align:right}
 .round-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
@@ -210,7 +210,7 @@ var PONTOS = [25,18,15,12,10,8,6,4,2];
 function getPontos(pos){ return pos<=PONTOS.length?PONTOS[pos-1]:1; }
 var isAdmin=false, rodadaAtual=0, jogadoresCadastrados=[];
 var etapaAtual={data:"",rodadas:[],jogadoresSelecionados:[]};
-var recordeAtual={fichas:1451,jogador:"NÉLIO"};
+var recordeAtual={fichas:0,jogador:"EDUARDO"};
 
 window.onload=function(){ carregarRanking(); carregarEtapas(); };
 
@@ -228,7 +228,7 @@ function carregarRanking(){
     .then(function(r){ return r.json(); })
     .then(function(d){
       var jogs=d.jogadores||[];
-      var ef=(d.etapas||[]).length;
+      var ef=(d.etapas||[]).filter(function(e){ return e.status==='Finalizada'; }).length;
       document.getElementById('stat-etapas').textContent=ef;
       document.getElementById('etapa-label').textContent=ef+' etapas realizadas';
       if(jogs.length){ document.getElementById('stat-lider').textContent=jogs[0].nome; document.getElementById('stat-lider-pts').textContent=jogs[0].total+' pts'; }
