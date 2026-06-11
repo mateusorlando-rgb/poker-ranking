@@ -191,9 +191,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </div>
 
 <script>
-var API_URL   = "https://script.google.com/macros/s/AKfycbzplGYbkyI-DAqL9-DSOhbCF1yKfOvfZYkAzL3CFMCP5Ujb3jDdRL7qAs2OEYqgeppdow/exec";
-var PIN_ADMIN = "1274";
-var TODAS_ETAPAS = ["10/jan","30/jan","20/fev","28/fev","13/mar","27/mar","10/abr","24/abr","08/mai","29/mai","12/jun","28/jun","11/jul","25/jul","15/ago","29/ago","05/set","26/set","17/out","31/out","14/nov","28/nov","18/dez","19/dez"];
+var API_URL   = "SUA_URL_DO_APPS_SCRIPT_AQUI";
+var PIN_ADMIN = "1234";
+var TODAS_ETAPAS = ["10/jan","30/jan","20/fev","28/fev","13/mar","27/mar","10/abr","24/abr","08/mai","29/mai","06/jun","28/jun","11/jul","25/jul","15/ago","29/ago","05/set","26/set","17/out","31/out","14/nov","28/nov","18/dez","19/dez"];
 var PONTOS = [25,18,15,12,10,8,6,4,2];
 function getPontos(pos){ return pos<=PONTOS.length?PONTOS[pos-1]:1; }
 var isAdmin=false, rodadaAtual=0, jogadoresCadastrados=[];
@@ -260,7 +260,18 @@ function verificarPin(){
 document.getElementById('pin-input').addEventListener('keydown',function(e){ if(e.key==='Enter') verificarPin(); });
 function sairAdmin(){ isAdmin=false; document.getElementById('admin-badge').style.display='none'; showScreen('ranking'); }
 function carregarJogadores(){ fetch(API_URL+'?acao=jogadores').then(function(r){ return r.json(); }).then(function(d){ jogadoresCadastrados=d.jogadores||[]; }); }
-function preencherDatas(){ document.getElementById('sel-data').innerHTML=TODAS_ETAPAS.map(function(d){ return '<option value="'+d+'">'+d+'</option>'; }).join(''); }
+function preencherDatas(){
+  var sel=document.getElementById('sel-data');
+  sel.innerHTML=TODAS_ETAPAS.map(function(d){ return '<option value="'+d+'">'+d+'</option>'; }).join('');
+  // Pré-seleciona a primeira data após a última etapa finalizada
+  fetch(API_URL+'?acao=etapas')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var finalizadas=(d.etapas||[]).filter(function(e){ return e.status==='Finalizada'; }).map(function(e){ return e.data; });
+      var proxima=TODAS_ETAPAS.find(function(d){ return finalizadas.indexOf(d)===-1; });
+      if(proxima) sel.value=proxima;
+    }).catch(function(){});
+}
 
 function verificarRascunho(){
   fetch(API_URL+'?acao=rascunho')
