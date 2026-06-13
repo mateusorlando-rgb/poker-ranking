@@ -114,6 +114,17 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <div class="card"><div id="etapas-list"><div class="loader">Carregando etapas...</div></div></div>
   </div>
 
+  <!-- DETALHE ETAPA -->
+  <div id="s-detalhe" class="screen">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Rodadas</div><div class="stat-val" id="det-rodadas">—</div></div>
+      <div class="stat-card"><div class="stat-label">Participantes</div><div class="stat-val" id="det-jogadores">—</div></div>
+    </div>
+    <div class="card"><div class="card-title" id="det-titulo"></div><div id="det-lista"></div></div>
+    <div id="det-extra" style="margin-bottom:8px"></div>
+    <button class="btn btn-outline" onclick="showScreen('etapas')">← Voltar</button>
+  </div>
+
   <div id="s-admin" class="screen">
     <div id="rascunho-aviso" style="display:none" class="recorde-box">
       ⚠️ Etapa em andamento: <strong id="rascunho-data"></strong><br>
@@ -241,9 +252,34 @@ function carregarEtapas(){
       if(!lista.length){ el.innerHTML='<div class="empty">Nenhuma etapa registrada.</div>'; return; }
       el.innerHTML=lista.map(function(e){
         var tc=e.status==='Rascunho'?'tag tag-draft':'tag';
-        return '<div class="etapa-row"><div><div style="font-size:14px;font-weight:600">'+e.data+'</div><div style="font-size:12px;color:#888780">'+e.rodadas+' rodadas · '+e.jogadores+' jogadores</div></div><span class="'+tc+'">'+e.status+'</span></div>';
+        var btn=e.status==='Finalizada'?'<button class="btn btn-outline btn-sm" onclick="abrirDetalheEtapa(\''+e.data+'\')">Ver resultado</button>':'';
+        return '<div class="etapa-row"><div><div style="font-size:14px;font-weight:600">'+e.data+'</div><div style="font-size:12px;color:#888780">'+e.rodadas+' rodadas · '+e.jogadores+' jogadores</div></div><div style="display:flex;align-items:center;gap:8px"><span class="'+tc+'">'+e.status+'</span>'+btn+'</div></div>';
       }).join('');
     });
+}
+
+function abrirDetalheEtapa(data){
+  document.getElementById('det-titulo').textContent='Pontuação — '+data;
+  document.getElementById('det-lista').innerHTML='<div class="loader">Carregando...</div>';
+  document.getElementById('det-extra').innerHTML='';
+  showScreen('detalhe');
+  fetch(API_URL+'?acao=detalheEtapa&data='+encodeURIComponent(data))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      document.getElementById('det-rodadas').textContent=d.rodadas;
+      document.getElementById('det-jogadores').textContent=d.ranking.length;
+      var PONTOS=[25,18,15,12,10,8,6,4,2];
+      function getPts(pos){ return pos<=PONTOS.length?PONTOS[pos-1]:1; }
+      document.getElementById('det-lista').innerHTML=d.ranking.map(function(j,i){
+        var pts=getPts(i+1)+(j.nome===d.maiorStack.nome?1:0);
+        var pc=i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
+        var sinal=j.fichas>0?'+':j.fichas===0?' ':'';
+        var stackBadge=j.nome===d.maiorStack.nome?'<span class="badge badge-green" style="margin-right:6px">+1</span>':'';
+        return '<div class="rank-row"><div class="pos '+pc+'">'+(i+1)+'</div><div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div><div class="player-name">'+j.nome+'<br><span style="font-size:11px;color:#888780">saldo: '+sinal+j.fichas+' fichas</span></div>'+stackBadge+'<div class="pts">'+pts+'</div></div>';
+      }).join('');
+      document.getElementById('det-extra').innerHTML='<div class="info-box">Maior stack: <strong>'+d.maiorStack.nome+'</strong> com '+d.maiorStack.fichas.toLocaleString('pt-BR')+' fichas (+1 pt)</div>';
+    })
+    .catch(function(){ document.getElementById('det-lista').innerHTML='<div class="empty">Erro ao carregar.</div>'; });
 }
 
 function pedirPin(){ document.getElementById('pin-overlay').classList.add('open'); document.getElementById('pin-input').value=''; document.getElementById('pin-err').textContent=''; setTimeout(function(){ document.getElementById('pin-input').focus(); },100); }
