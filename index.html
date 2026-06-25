@@ -202,8 +202,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </div>
 
 <script>
-var API_URL   = "https://script.google.com/macros/s/AKfycbyZ2kM5CAwPktGTe7ANp2fdBlagQJfwNDDB4VyCla8_UH7hfaSN-BrBuxT4H7ZPcUulfw/exec";
-var PIN_ADMIN = "1274";
+var API_URL   = "SUA_URL_DO_APPS_SCRIPT_AQUI";
+var PIN_ADMIN = "1234";
 var TODAS_ETAPAS = ["10/jan","30/jan","20/fev","28/fev","13/mar","27/mar","10/abr","24/abr","08/mai","29/mai","12/jun","28/jun","11/jul","25/jul","15/ago","29/ago","05/set","26/set","17/out","31/out","14/nov","28/nov","18/dez","19/dez"];
 var PONTOS = [25,18,15,12,10,8,6,4,2];
 function getPontos(pos){ return pos<=PONTOS.length?PONTOS[pos-1]:1; }
@@ -257,18 +257,52 @@ function carregarEtapas(){
           btns='<button class="btn btn-outline btn-sm" onclick="abrirDetalheEtapa(\''+e.data+'\')">Ver resultado</button>';
         } else if(e.status==='Rascunho'){
           btns='<div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">'+
-            '<button class="btn btn-outline btn-sm" onclick="verRascunho(\''+e.data+'\')">Ver</button>'+
-            '<button class="btn btn-outline btn-sm" onclick="continuarRascunho(\''+e.data+'\')">Continuar</button>'+
-            '<button class="btn btn-danger btn-sm" onclick="deletarRascunho(\''+e.data+'\')">Excluir</button>'+
+            '<button class="btn btn-outline btn-sm" onclick="verDetalheRascunho(\''+e.data+'\')">Ver</button>'+
+            (isAdmin?
+              '<button class="btn btn-outline btn-sm" onclick="continuarRascunho(\''+e.data+'\')">Continuar</button>'+
+              '<button class="btn btn-danger btn-sm" onclick="deletarRascunho(\''+e.data+'\')">Excluir</button>'
+            :'')+
           '</div>';
         }
-        return '<div class="etapa-row" style="align-items:flex-start"><div style="flex:1"><div style="font-size:14px;font-weight:600">'+e.data+'</div><div style="font-size:12px;color:#888780">'+e.rodadas+' rodadas · '+e.jogadores+' jogadores</div><span class="'+tc+'" style="margin-top:4px;display:inline-block">'+e.status+'</span></div>'+btns+'</div>';
+        return '<div class="etapa-row" style="align-items:flex-start"><div style="flex:1"><div style="font-size:14px;font-weight:600">'+e.data+'</div><div style="font-size:12px;color:#888780">'+e.rodadas+' rodadas · '+e.jogadores+' jogadores</div><span class="'+tc+'" style="margin-top:4px;display:inline-block">'+e.status+'</span></div><div style="margin-left:8px">'+btns+'</div></div>';
       }).join('');
     });
 }
 
-function verRascunho(data){
-  abrirDetalheEtapa(data);
+function verDetalheRascunho(data){
+  fetch(API_URL+'?acao=rascunhos')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var found=(d.rascunhos||[]).find(function(r){ return r.data===data; });
+      if(!found){ document.getElementById('det-lista').innerHTML='<div class="empty">Rascunho não encontrado.</div>'; showScreen('detalhe'); return; }
+      try{
+        var rasc=JSON.parse(found.json);
+        // Calcula resultado parcial com os dados do rascunho
+        var saldos={};
+        var maiorStackVal=-Infinity, maiorStackJog="";
+        rasc.rodadas.forEach(function(rod){
+          rod.forEach(function(j){
+            saldos[j.nome]=(saldos[j.nome]||0)+j.fichas;
+            if(j.fichas>maiorStackVal){ maiorStackVal=j.fichas; maiorStackJog=j.nome; }
+          });
+        });
+        var ranking=Object.keys(saldos).map(function(n){ return {nome:n,fichas:saldos[n]}; })
+          .sort(function(a,b){ return b.fichas-a.fichas; });
+        document.getElementById('det-titulo').textContent='Rascunho — '+data;
+        document.getElementById('det-rodadas').textContent=rasc.rodadas.length;
+        document.getElementById('det-jogadores').textContent=ranking.length;
+        document.getElementById('det-lista').innerHTML=ranking.map(function(j,i){
+          var pts=getPontos(i+1)+(j.nome===maiorStackJog?1:0);
+          var pc=i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
+          var sinal=j.fichas>0?'+':j.fichas===0?' ':'';
+          var stackBadge=j.nome===maiorStackJog?'<span class="badge badge-green" style="margin-right:6px">+1</span>':'';
+          return '<div class="rank-row"><div class="pos '+pc+'">'+(i+1)+'</div><div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div><div class="player-name">'+j.nome+'<br><span style="font-size:11px;color:#888780">saldo: '+sinal+j.fichas+' fichas</span></div>'+stackBadge+'<div class="pts">'+pts+'</div></div>';
+        }).join('');
+        document.getElementById('det-extra').innerHTML='<div class="info-box">Maior stack: <strong>'+maiorStackJog+'</strong> com '+maiorStackVal.toLocaleString('pt-BR')+' fichas (+1 pt) · Resultado parcial</div>';
+        showScreen('detalhe');
+      }catch(e){ alert('Erro ao processar rascunho.'); }
+    })
+    .catch(function(){ alert('Erro ao carregar rascunho.'); });
 }
 
 function continuarRascunho(data){
