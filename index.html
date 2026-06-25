@@ -202,8 +202,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </div>
 
 <script>
-var API_URL   = "https://script.google.com/macros/s/AKfycbyZ2kM5CAwPktGTe7ANp2fdBlagQJfwNDDB4VyCla8_UH7hfaSN-BrBuxT4H7ZPcUulfw/exec";
-var PIN_ADMIN = "1274";
+var API_URL   = "SUA_URL_DO_APPS_SCRIPT_AQUI";
+var PIN_ADMIN = "1234";
 var TODAS_ETAPAS = ["10/jan","30/jan","20/fev","28/fev","13/mar","27/mar","10/abr","24/abr","08/mai","29/mai","12/jun","28/jun","11/jul","25/jul","15/ago","29/ago","05/set","26/set","17/out","31/out","14/nov","28/nov","18/dez","19/dez"];
 var PONTOS = [25,18,15,12,10,8,6,4,2];
 function getPontos(pos){ return pos<=PONTOS.length?PONTOS[pos-1]:1; }
@@ -252,10 +252,48 @@ function carregarEtapas(){
       if(!lista.length){ el.innerHTML='<div class="empty">Nenhuma etapa registrada.</div>'; return; }
       el.innerHTML=lista.map(function(e){
         var tc=e.status==='Rascunho'?'tag tag-draft':'tag';
-        var btn=e.status==='Finalizada'?'<button class="btn btn-outline btn-sm" onclick="abrirDetalheEtapa(\''+e.data+'\')">Ver resultado</button>':'';
-        return '<div class="etapa-row"><div><div style="font-size:14px;font-weight:600">'+e.data+'</div><div style="font-size:12px;color:#888780">'+e.rodadas+' rodadas · '+e.jogadores+' jogadores</div></div><div style="display:flex;align-items:center;gap:8px"><span class="'+tc+'">'+e.status+'</span>'+btn+'</div></div>';
+        var btns='';
+        if(e.status==='Finalizada'){
+          btns='<button class="btn btn-outline btn-sm" onclick="abrirDetalheEtapa(\''+e.data+'\')">Ver resultado</button>';
+        } else if(e.status==='Rascunho'){
+          btns='<div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">'+
+            '<button class="btn btn-outline btn-sm" onclick="verRascunho(\''+e.data+'\')">Ver</button>'+
+            '<button class="btn btn-outline btn-sm" onclick="continuarRascunho(\''+e.data+'\')">Continuar</button>'+
+            '<button class="btn btn-danger btn-sm" onclick="deletarRascunho(\''+e.data+'\')">Excluir</button>'+
+          '</div>';
+        }
+        return '<div class="etapa-row" style="align-items:flex-start"><div style="flex:1"><div style="font-size:14px;font-weight:600">'+e.data+'</div><div style="font-size:12px;color:#888780">'+e.rodadas+' rodadas · '+e.jogadores+' jogadores</div><span class="'+tc+'" style="margin-top:4px;display:inline-block">'+e.status+'</span></div>'+btns+'</div>';
       }).join('');
     });
+}
+
+function verRascunho(data){
+  abrirDetalheEtapa(data);
+}
+
+function continuarRascunho(data){
+  fetch(API_URL+'?acao=rascunhos')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var found=(d.rascunhos||[]).find(function(r){ return r.data===data; });
+      if(found){
+        try{
+          etapaAtual=JSON.parse(found.json);
+          rodadaAtual=etapaAtual.rodadas.length-1;
+          renderRodada();
+          showScreen('rodada');
+        }catch(e){ alert('Erro ao carregar rascunho.'); }
+      } else { alert('Rascunho não encontrado.'); }
+    });
+}
+
+function deletarRascunho(data){
+  if(!confirm('Excluir o rascunho de '+data+'?')) return;
+  fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({acao:'excluirRascunho',data:data})
+  }).then(function(){
+    setTimeout(function(){ carregarEtapas(); },1500);
+  });
 }
 
 function abrirDetalheEtapa(data){
