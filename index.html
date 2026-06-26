@@ -365,8 +365,43 @@ function verificarPin(){
     isAdmin=true; fecharPin();
     document.getElementById('admin-badge').style.display='block';
     carregarJogadores();
-    carregarEtapasAdmin();
-    showScreen('admin');
+    // Busca recorde
+    fetch(API_URL+'?acao=recorde').then(function(r){ return r.json(); }).then(function(d){
+      if(d.jogador) recordeAtual={fichas:d.fichas,jogador:d.jogador};
+    }).catch(function(){});
+    // Carrega etapas e monta admin
+    fetch(API_URL+'?acao=etapas')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var lista=d.etapas||[];
+        etapasFinalizadas=lista.filter(function(e){ return e.status==='Finalizada'; }).map(function(e){ return parseInt(e.num); });
+        var andamento=lista.filter(function(e){ return e.status==='Em andamento'; });
+        // Aviso em andamento
+        if(andamento.length>0){
+          var ea=andamento[andamento.length-1];
+          document.getElementById('andamento-aviso').style.display='block';
+          document.getElementById('andamento-label').textContent=dataEtapa(parseInt(ea.num));
+          document.getElementById('andamento-info').textContent=ea.rodadas+' rodada(s) · '+ea.jogadores+' jogadores';
+          document.getElementById('btn-retomar').style.display='block';
+          document.getElementById('btn-retomar').onclick=function(){ continuarAndamento(parseInt(ea.num)); };
+          document.getElementById('btn-descartar').style.display='block';
+          document.getElementById('btn-descartar').onclick=function(){ descartarAndamento(parseInt(ea.num)); };
+        } else {
+          document.getElementById('andamento-aviso').style.display='none';
+          document.getElementById('btn-retomar').style.display='none';
+          document.getElementById('btn-descartar').style.display='none';
+        }
+        // Seletor
+        var sel=document.getElementById('sel-data');
+        sel.innerHTML=Object.keys(ETAPAS_MAP).map(function(n){
+          return '<option value="'+n+'">'+labelEtapa(parseInt(n))+'</option>';
+        }).join('');
+        var nums=Object.keys(ETAPAS_MAP).map(Number).sort(function(a,b){ return a-b; });
+        var proxima=nums.find(function(n){ return etapasFinalizadas.indexOf(n)===-1; });
+        if(proxima) sel.value=proxima;
+        showScreen('admin');
+      })
+      .catch(function(){ showScreen('admin'); });
   } else {
     document.getElementById('pin-err').textContent='PIN incorreto.';
     document.getElementById('pin-input').value='';
