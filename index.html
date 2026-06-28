@@ -102,6 +102,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 <div class="content">
 
   <div id="s-ranking" class="screen active">
+    <div id="recorde-bar" class="info-box" style="display:none">🏆 Recorde anual: <strong id="recorde-display"></strong></div>
     <div class="card"><div id="ranking-list"><div class="loader">Carregando ranking...</div></div></div>
   </div>
 
@@ -234,6 +235,16 @@ function carregarRanking(){
       document.getElementById('ranking-list').innerHTML='<div class="empty">Sem conexão.</div>';
       document.getElementById('etapa-label').textContent='Offline';
     });
+  // Busca recorde separadamente
+  fetch(API_URL+'?acao=recorde')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.jogador){
+        recordeAtual={fichas:d.fichas,jogador:d.jogador};
+        document.getElementById('recorde-display').textContent=d.fichas.toLocaleString('pt-BR')+' fichas ('+d.jogador+')';
+        document.getElementById('recorde-bar').style.display='block';
+      }
+    }).catch(function(){});
 }
 
 function renderRanking(lista){
@@ -365,42 +376,48 @@ function sairAdmin(){ isAdmin=false; document.getElementById('admin-badge').styl
 function carregarJogadores(){ fetch(API_URL+'?acao=jogadores').then(function(r){ return r.json(); }).then(function(d){ jogadoresCadastrados=d.jogadores||[]; }); }
 
 function carregarAdmin(){
-  // Busca recorde
-  fetch(API_URL+'?acao=recorde').then(function(r){ return r.json(); }).then(function(d){
-    if(d.jogador) recordeAtual={fichas:d.fichas,jogador:d.jogador};
-  }).catch(function(){});
+  // Busca recorde e etapas em paralelo
+  Promise.all([
+    fetch(API_URL+'?acao=recorde').then(function(r){ return r.json(); }).catch(function(){ return {jogador:"",fichas:0}; }),
+    fetch(API_URL+'?acao=etapas').then(function(r){ return r.json(); }).catch(function(){ return {etapas:[]}; })
+  ]).then(function(results){
+    var rec=results[0], d=results[1];
 
-  // Carrega etapas para montar admin
-  fetch(API_URL+'?acao=etapas')
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      var lista=d.etapas||[];
-      var finalizadas=lista.filter(function(e){ return e.status==='Finalizada'; }).map(function(e){ return e.data; });
-      etapasAndamento=lista.filter(function(e){ return e.status==='Em andamento'; });
+    // Atualiza recorde
+    if(rec.jogador){
+      recordeAtual={fichas:rec.fichas,jogador:rec.jogador};
+    }
 
-      // Aviso em andamento
-      if(etapasAndamento.length>0){
-        var ea=etapasAndamento[etapasAndamento.length-1];
-        document.getElementById('andamento-aviso').style.display='block';
-        document.getElementById('andamento-label').textContent=ea.data;
-        document.getElementById('andamento-info').textContent=ea.rodadas+' rodada(s) · '+ea.jogadores+' jogadores';
-        document.getElementById('btn-retomar').style.display='block';
-        document.getElementById('btn-descartar').style.display='block';
-      } else {
-        document.getElementById('andamento-aviso').style.display='none';
-        document.getElementById('btn-retomar').style.display='none';
-        document.getElementById('btn-descartar').style.display='none';
-      }
+    var lista=d.etapas||[];
+    var finalizadas=lista.filter(function(e){ return e.status==='Finalizada'; }).map(function(e){ return e.data; });
+    etapasAndamento=lista.filter(function(e){ return e.status==='Em andamento'; });
 
-      // Seletor — pré-seleciona próxima não finalizada
-      var sel=document.getElementById('sel-data');
-      sel.innerHTML=TODAS_ETAPAS.map(function(d){ return '<option value="'+d+'">'+d+'</option>'; }).join('');
-      var proxima=TODAS_ETAPAS.find(function(d){ return finalizadas.indexOf(d)===-1; });
-      if(proxima) sel.value=proxima;
+    // Aviso em andamento
+    if(etapasAndamento.length>0){
+      var ea=etapasAndamento[etapasAndamento.length-1];
+      document.getElementById('andamento-aviso').style.display='block';
+      document.getElementById('andamento-label').textContent=ea.data;
+      document.getElementById('andamento-info').textContent=ea.rodadas+' rodada(s) · '+ea.jogadores+' jogadores';
+      document.getElementById('btn-retomar').style.display='block';
+      document.getElementById('btn-descartar').style.display='block';
+    } else {
+      document.getElementById('andamento-aviso').style.display='none';
+      document.getElementById('btn-retomar').style.display='none';
+      document.getElementById('btn-descartar').style.display='none';
+    }
 
-      showScreen('admin');
-    })
-    .catch(function(){ showScreen('admin'); });
+    // Seletor
+    var sel=document.getElementById('sel-data');
+    sel.innerHTML=TODAS_ETAPAS.map(function(d){ return '<option value="'+d+'">'+d+'</option>'; }).join('');
+    var proxima=TODAS_ETAPAS.find(function(d){ return finalizadas.indexOf(d)===-1; });
+    if(proxima) sel.value=proxima;
+
+    // Exibe recorde após tudo carregado
+    var recEl=document.getElementById('recorde-display');
+    if(recEl) recEl.textContent=recordeAtual.fichas.toLocaleString('pt-BR')+' fichas ('+recordeAtual.jogador+')';
+
+    showScreen('admin');
+  });
 }
 
 var salvandoRascunho=false;
