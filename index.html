@@ -403,11 +403,14 @@ function carregarAdmin(){
     .catch(function(){ showScreen('admin'); });
 }
 
+var salvandoRascunho=false;
+
 function salvarRascunho(dados){
-  if(!dados) return;
+  if(!dados||salvandoRascunho) return;
+  salvandoRascunho=true;
   fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({acao:'salvarRascunho',rascunho:dados})
-  });
+  }).finally(function(){ salvandoRascunho=false; });
 }
 
 function retomarAndamento(){
@@ -549,7 +552,21 @@ function addRodada(){
 function finalizarRodada(){
   var total=etapaAtual.rodadas[rodadaAtual].reduce(function(a,j){ return a+j.fichas; },0);
   if(total!==0&&!confirm('Total da rodada é '+total+' (deveria ser 0). Continuar?')) return;
-  salvarRascunho(etapaAtual); addRodada();
+  // Salva estado atual antes de criar nova rodada
+  var estadoAtual=JSON.parse(JSON.stringify(etapaAtual));
+  var prev=etapaAtual.rodadas[rodadaAtual];
+  etapaAtual.rodadas.push(prev.map(function(j){ return {nome:j.nome,fichas:0}; }));
+  rodadaAtual=etapaAtual.rodadas.length-1;
+  // Salva com retry em caso de falha
+  fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({acao:'salvarRascunho',rascunho:etapaAtual})
+  }).catch(function(){
+    // Em caso de falha, tenta salvar o estado anterior
+    fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({acao:'salvarRascunho',rascunho:estadoAtual})
+    });
+  });
+  renderRodada();
 }
 
 function cancelarEtapa(){
