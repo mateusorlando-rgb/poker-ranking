@@ -97,7 +97,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 <div class="nav">
   <button class="nav-btn active" onclick="showScreen('ranking')">Ranking</button>
   <button class="nav-btn" onclick="carregarEtapas();showScreen('etapas')">Etapas</button>
-  <button class="nav-btn" onclick="pedirPin()">Admin</button>
+  <button class="nav-btn" onclick="acessarAdmin()">Admin</button>
 </div>
 <div class="content">
 
@@ -206,6 +206,7 @@ var PONTOS=[25,18,15,12,10,8,6,4,2];
 function getPontos(pos){ return pos<=PONTOS.length?PONTOS[pos-1]:1; }
 
 // ── SESSÃO ADMIN ──────────────────────────────
+// Lê sessão antes de qualquer coisa
 var isAdmin = sessionStorage.getItem('pokerAdmin')==='1';
 var rodadaAtual=0, jogadoresCadastrados=[];
 var etapaAtual={data:"",rodadas:[],jogadoresSelecionados:[]};
@@ -213,6 +214,7 @@ var recordeAtual={fichas:0,jogador:""};
 var etapasAndamento=[];
 
 window.onload=function(){
+  // Restaura badge se já era admin
   if(isAdmin) document.getElementById('admin-badge').style.display='block';
   carregarRanking();
   carregarEtapas();
@@ -278,7 +280,7 @@ function carregarEtapas(){
       el.innerHTML=lista.map(function(e){
         var isA=e.status==='Em andamento';
         var tc=isA?'tag tag-andamento':'tag';
-        // Etapas em andamento: apenas botão Ver (sem Continuar/Excluir)
+        // Apenas botão Ver para todos — Continuar/Excluir ficam só no Admin
         var btns='<button class="btn btn-outline btn-sm" onclick="abrirDetalhe(\''+e.data+'\',\''+(isA?'andamento':'finalizada')+'\')">Ver</button>';
         return '<div class="etapa-row"><div style="flex:1">'+
           '<div style="font-size:14px;font-weight:600">'+e.data+'</div>'+
@@ -347,13 +349,23 @@ function renderDetalheFromRascunho(rasc){
 }
 
 // ── PIN / ADMIN ───────────────────────────────
+function acessarAdmin(){
+  if(isAdmin){
+    // Já autenticado — vai direto pro admin
+    carregarJogadores();
+    carregarAdmin();
+  } else {
+    pedirPin();
+  }
+}
+
 function pedirPin(){
-  if(isAdmin){ carregarAdmin(); return; }
   document.getElementById('pin-overlay').classList.add('open');
   document.getElementById('pin-input').value='';
   document.getElementById('pin-err').textContent='';
   setTimeout(function(){ document.getElementById('pin-input').focus(); },100);
 }
+
 function fecharPin(){ document.getElementById('pin-overlay').classList.remove('open'); }
 
 function verificarPin(){
@@ -369,6 +381,7 @@ function verificarPin(){
     document.getElementById('pin-input').value='';
   }
 }
+
 document.getElementById('pin-input').addEventListener('keydown',function(e){ if(e.key==='Enter') verificarPin(); });
 
 function sairAdmin(){
@@ -426,14 +439,12 @@ function salvarRascunho(dados){
 
 function retomarAndamento(){
   if(etapasAndamento.length===0) return;
-  var ea=etapasAndamento[etapasAndamento.length-1];
-  continuarAndamento(ea.data);
+  continuarAndamento(etapasAndamento[etapasAndamento.length-1].data);
 }
 
 function descartarAndamento(){
   if(etapasAndamento.length===0) return;
-  var ea=etapasAndamento[etapasAndamento.length-1];
-  deletarAndamento(ea.data);
+  deletarAndamento(etapasAndamento[etapasAndamento.length-1].data);
 }
 
 function continuarAndamento(data){
