@@ -548,6 +548,9 @@ function atualizarFicha(i,el){
   etapaAtual.rodadas[rodadaAtual][i].fichas=v;
   el.className='fichas-input '+(v>0?'pos':v<0?'neg':'zero');
   atualizarSaldo();
+  // Salva automaticamente ao alterar fichas
+  clearTimeout(window._saveTimer);
+  window._saveTimer=setTimeout(function(){ salvarRascunho(etapaAtual); },1500);
 }
 
 function atualizarSaldo(){
