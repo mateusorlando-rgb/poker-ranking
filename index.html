@@ -205,12 +205,18 @@ var TODAS_ETAPAS = ["10/jan","30/jan","20/fev","28/fev","13/mar","27/mar","10/ab
 var PONTOS=[25,18,15,12,10,8,6,4,2];
 function getPontos(pos){ return pos<=PONTOS.length?PONTOS[pos-1]:1; }
 
-var isAdmin=false, rodadaAtual=0, jogadoresCadastrados=[];
+// ── SESSÃO ADMIN ──────────────────────────────
+var isAdmin = sessionStorage.getItem('pokerAdmin')==='1';
+var rodadaAtual=0, jogadoresCadastrados=[];
 var etapaAtual={data:"",rodadas:[],jogadoresSelecionados:[]};
 var recordeAtual={fichas:0,jogador:""};
 var etapasAndamento=[];
 
-window.onload=function(){ carregarRanking(); carregarEtapas(); };
+window.onload=function(){
+  if(isAdmin) document.getElementById('admin-badge').style.display='block';
+  carregarRanking();
+  carregarEtapas();
+};
 
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
@@ -235,7 +241,6 @@ function carregarRanking(){
       document.getElementById('ranking-list').innerHTML='<div class="empty">Sem conexão.</div>';
       document.getElementById('etapa-label').textContent='Offline';
     });
-  // Busca recorde separadamente
   fetch(API_URL+'?acao=recorde')
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -273,18 +278,8 @@ function carregarEtapas(){
       el.innerHTML=lista.map(function(e){
         var isA=e.status==='Em andamento';
         var tc=isA?'tag tag-andamento':'tag';
-        var btns='';
-        if(e.status==='Finalizada'){
-          btns='<button class="btn btn-outline btn-sm" onclick="abrirDetalhe(\''+e.data+'\',\'finalizada\')">Ver resultado</button>';
-        } else if(isA){
-          btns='<div style="display:flex;gap:6px;flex-direction:column;align-items:flex-end">'+
-            '<button class="btn btn-outline btn-sm" onclick="abrirDetalhe(\''+e.data+'\',\'andamento\')">Ver</button>'+
-            (isAdmin?
-              '<button class="btn btn-outline btn-sm" onclick="continuarAndamento(\''+e.data+'\')">Continuar</button>'+
-              '<button class="btn btn-danger btn-sm" onclick="deletarAndamento(\''+e.data+'\')">Excluir</button>'
-            :'')+
-          '</div>';
-        }
+        // Etapas em andamento: apenas botão Ver (sem Continuar/Excluir)
+        var btns='<button class="btn btn-outline btn-sm" onclick="abrirDetalhe(\''+e.data+'\',\''+(isA?'andamento':'finalizada')+'\')">Ver</button>';
         return '<div class="etapa-row"><div style="flex:1">'+
           '<div style="font-size:14px;font-weight:600">'+e.data+'</div>'+
           '<div style="font-size:12px;color:#888780">'+e.rodadas+' rodadas · '+e.jogadores+' jogadores</div>'+
@@ -353,6 +348,7 @@ function renderDetalheFromRascunho(rasc){
 
 // ── PIN / ADMIN ───────────────────────────────
 function pedirPin(){
+  if(isAdmin){ carregarAdmin(); return; }
   document.getElementById('pin-overlay').classList.add('open');
   document.getElementById('pin-input').value='';
   document.getElementById('pin-err').textContent='';
@@ -362,7 +358,9 @@ function fecharPin(){ document.getElementById('pin-overlay').classList.remove('o
 
 function verificarPin(){
   if(document.getElementById('pin-input').value===PIN_ADMIN){
-    isAdmin=true; fecharPin();
+    isAdmin=true;
+    sessionStorage.setItem('pokerAdmin','1');
+    fecharPin();
     document.getElementById('admin-badge').style.display='block';
     carregarJogadores();
     carregarAdmin();
@@ -372,27 +370,28 @@ function verificarPin(){
   }
 }
 document.getElementById('pin-input').addEventListener('keydown',function(e){ if(e.key==='Enter') verificarPin(); });
-function sairAdmin(){ isAdmin=false; document.getElementById('admin-badge').style.display='none'; showScreen('ranking'); }
-function carregarJogadores(){ fetch(API_URL+'?acao=jogadores').then(function(r){ return r.json(); }).then(function(d){ jogadoresCadastrados=d.jogadores||[]; }); }
+
+function sairAdmin(){
+  isAdmin=false;
+  sessionStorage.removeItem('pokerAdmin');
+  document.getElementById('admin-badge').style.display='none';
+  showScreen('ranking');
+}
+
+function carregarJogadores(){
+  fetch(API_URL+'?acao=jogadores').then(function(r){ return r.json(); }).then(function(d){ jogadoresCadastrados=d.jogadores||[]; });
+}
 
 function carregarAdmin(){
-  // Busca recorde e etapas em paralelo
   Promise.all([
     fetch(API_URL+'?acao=recorde').then(function(r){ return r.json(); }).catch(function(){ return {jogador:"",fichas:0}; }),
     fetch(API_URL+'?acao=etapas').then(function(r){ return r.json(); }).catch(function(){ return {etapas:[]}; })
   ]).then(function(results){
     var rec=results[0], d=results[1];
-
-    // Atualiza recorde
-    if(rec.jogador){
-      recordeAtual={fichas:rec.fichas,jogador:rec.jogador};
-    }
-
+    if(rec.jogador){ recordeAtual={fichas:rec.fichas,jogador:rec.jogador}; }
     var lista=d.etapas||[];
     var finalizadas=lista.filter(function(e){ return e.status==='Finalizada'; }).map(function(e){ return e.data; });
     etapasAndamento=lista.filter(function(e){ return e.status==='Em andamento'; });
-
-    // Aviso em andamento
     if(etapasAndamento.length>0){
       var ea=etapasAndamento[etapasAndamento.length-1];
       document.getElementById('andamento-aviso').style.display='block';
@@ -405,17 +404,12 @@ function carregarAdmin(){
       document.getElementById('btn-retomar').style.display='none';
       document.getElementById('btn-descartar').style.display='none';
     }
-
-    // Seletor
     var sel=document.getElementById('sel-data');
     sel.innerHTML=TODAS_ETAPAS.map(function(d){ return '<option value="'+d+'">'+d+'</option>'; }).join('');
     var proxima=TODAS_ETAPAS.find(function(d){ return finalizadas.indexOf(d)===-1; });
     if(proxima) sel.value=proxima;
-
-    // Exibe recorde após tudo carregado
     var recEl=document.getElementById('recorde-display');
     if(recEl) recEl.textContent=recordeAtual.fichas.toLocaleString('pt-BR')+' fichas ('+recordeAtual.jogador+')';
-
     showScreen('admin');
   });
 }
@@ -548,7 +542,6 @@ function atualizarFicha(i,el){
   etapaAtual.rodadas[rodadaAtual][i].fichas=v;
   el.className='fichas-input '+(v>0?'pos':v<0?'neg':'zero');
   atualizarSaldo();
-  // Salva automaticamente ao alterar fichas
   clearTimeout(window._saveTimer);
   window._saveTimer=setTimeout(function(){ salvarRascunho(etapaAtual); },1500);
 }
@@ -572,16 +565,13 @@ function addRodada(){
 function finalizarRodada(){
   var total=etapaAtual.rodadas[rodadaAtual].reduce(function(a,j){ return a+j.fichas; },0);
   if(total!==0&&!confirm('Total da rodada é '+total+' (deveria ser 0). Continuar?')) return;
-  // Salva estado atual antes de criar nova rodada
   var estadoAtual=JSON.parse(JSON.stringify(etapaAtual));
   var prev=etapaAtual.rodadas[rodadaAtual];
   etapaAtual.rodadas.push(prev.map(function(j){ return {nome:j.nome,fichas:0}; }));
   rodadaAtual=etapaAtual.rodadas.length-1;
-  // Salva com retry em caso de falha
   fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({acao:'salvarRascunho',rascunho:etapaAtual})
   }).catch(function(){
-    // Em caso de falha, tenta salvar o estado anterior
     fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
       body:JSON.stringify({acao:'salvarRascunho',rascunho:estadoAtual})
     });
