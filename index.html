@@ -97,7 +97,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 <div class="nav">
   <button class="nav-btn active" onclick="showScreen('ranking')">Ranking</button>
   <button class="nav-btn" onclick="carregarEtapas();showScreen('etapas')">Etapas</button>
-  <button class="nav-btn" onclick="acessarAdmin()">Admin</button>
+  <button class="nav-btn" onclick="carregarAdminPublico()">Admin</button>
 </div>
 <div class="content">
 
@@ -129,9 +129,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="card-title">Nova etapa</div>
       <label class="field-label">Data da etapa</label>
       <select id="sel-data"></select>
-      <button class="btn btn-dark" onclick="irParaSelecaoJogadores()">Selecionar jogadores →</button>
-      <button id="btn-retomar" class="btn btn-outline" style="display:none" onclick="retomarAndamento()">Retomar etapa em andamento</button>
-      <button id="btn-descartar" class="btn btn-danger" style="display:none" onclick="descartarAndamento()">Descartar etapa em andamento</button>
+      <button class="btn btn-dark" onclick="acaoComPin(irParaSelecaoJogadores)">Selecionar jogadores →</button>
+      <button id="btn-retomar" class="btn btn-outline" style="display:none" onclick="acaoComPin(retomarAndamento)">Retomar etapa em andamento</button>
+      <button id="btn-descartar" class="btn btn-danger" style="display:none" onclick="acaoComPin(descartarAndamento)">Descartar etapa em andamento</button>
       <button class="btn btn-outline" style="margin-top:16px" onclick="sairAdmin()">Sair do modo admin</button>
     </div>
   </div>
@@ -353,14 +353,21 @@ function renderDetalheFromRascunho(rasc){
 }
 
 // ── PIN / ADMIN ───────────────────────────────
-function acessarAdmin(){
-  if(isAdmin){
-    // Já autenticado — vai direto pro admin
-    carregarJogadores();
-    carregarAdmin();
-  } else {
-    pedirPin();
-  }
+var acaoPendente=null;
+
+// Abre a tela Admin para qualquer usuário, sem exigir PIN.
+// Mostra o status (etapa em andamento, próxima etapa) normalmente.
+function carregarAdminPublico(){
+  carregarJogadores();
+  carregarAdmin();
+}
+
+// Executa uma ação protegida: se já autenticado, executa direto;
+// senão, guarda a ação e pede o PIN primeiro.
+function acaoComPin(fn){
+  if(isAdmin){ fn(); return; }
+  acaoPendente=fn;
+  pedirPin();
 }
 
 function pedirPin(){
@@ -370,16 +377,20 @@ function pedirPin(){
   setTimeout(function(){ document.getElementById('pin-input').focus(); },100);
 }
 
-function fecharPin(){ document.getElementById('pin-overlay').classList.remove('open'); }
+function fecharPin(){
+  document.getElementById('pin-overlay').classList.remove('open');
+  acaoPendente=null;
+}
 
 function verificarPin(){
   if(document.getElementById('pin-input').value===PIN_ADMIN){
     isAdmin=true;
     sessionStorage.setItem('pokerAdmin','1');
-    fecharPin();
+    document.getElementById('pin-overlay').classList.remove('open');
     document.getElementById('admin-badge').style.display='block';
     carregarJogadores();
-    carregarAdmin();
+    var fn=acaoPendente; acaoPendente=null;
+    if(fn) fn(); else carregarAdmin();
   } else {
     document.getElementById('pin-err').textContent='PIN incorreto.';
     document.getElementById('pin-input').value='';
