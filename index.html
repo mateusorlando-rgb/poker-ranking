@@ -197,8 +197,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </div>
 
 <script>
-var API_URL   = "https://script.google.com/macros/s/AKfycbyZ2kM5CAwPktGTe7ANp2fdBlagQJfwNDDB4VyCla8_UH7hfaSN-BrBuxT4H7ZPcUulfw/exec";
-var PIN_ADMIN = "1274";
+var API_URL   = "SUA_URL_DO_APPS_SCRIPT_AQUI";
+var PIN_ADMIN = "1234";
 
 var TODAS_ETAPAS = ["10/jan","30/jan","20/fev","28/fev","13/mar","27/mar","10/abr","24/abr","08/mai","29/mai","12/jun","28/jun","11/jul","25/jul","15/ago","29/ago","05/set","26/set","17/out","31/out","14/nov","28/nov","18/dez","19/dez"];
 
@@ -260,9 +260,13 @@ function renderRanking(lista){
   el.innerHTML=lista.map(function(j,i){
     var pc=i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
     var eb=j.extras>0?'<span class="badge badge-amber" style="margin-right:6px">+'+j.extras+'</span>':'';
+    var media=j.mediaFichas||0;
+    var mediaCor=media>0?'#27500A':media<0?'#A32D2D':'#888780';
+    var mediaSinal=media>0?'+':'';
     return '<div class="rank-row"><div class="pos '+pc+'">'+(i+1)+'</div>'+
       '<div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div>'+
-      '<div class="player-name">'+j.nome+'<br><span style="font-size:11px;color:#888780">'+j.jogos+' etapas</span></div>'+
+      '<div class="player-name">'+j.nome+'<br><span style="font-size:11px;color:#888780">'+j.jogos+' etapas · média '+
+      '<span style="color:'+mediaCor+';font-weight:600">'+mediaSinal+media.toLocaleString('pt-BR')+'</span></span></div>'+
       eb+'<div class="pts">'+j.total+'</div></div>';
   }).join('');
 }
