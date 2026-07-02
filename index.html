@@ -408,7 +408,7 @@ function carregarEtapas(){
     .then(function(r){ return r.json(); })
     .then(function(d){
       var lista=d.etapas||[];
-      lista.sort(function(a,b){ return TODAS_ETAPAS.indexOf(a.data)-TODAS_ETAPAS.indexOf(b.data); });
+      lista.sort(function(a,b){ return TODAS_ETAPAS.indexOf(b.data)-TODAS_ETAPAS.indexOf(a.data); });
       etapasAndamento=lista.filter(function(e){ return e.status==='Em andamento'; });
       var el=document.getElementById('etapas-list');
       if(!lista.length){ el.innerHTML='<div class="empty">Nenhuma etapa registrada.</div>'; return; }
