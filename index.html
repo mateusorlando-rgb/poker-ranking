@@ -307,8 +307,6 @@ var etapaAtual={data:"",rodadas:[],jogadoresSelecionados:[]};
 var recordeAtual={fichas:0,jogador:""};
 var etapasAndamento=[];
 var acaoPendente=null;
-// Guarda classificação da última vez que o ranking foi carregado, para calcular tendência
-var rankingAnterior={};
 
 window.onload=function(){
   if(isAdmin) document.getElementById('admin-badge') && (document.getElementById('admin-badge').style.display='block');
@@ -359,20 +357,6 @@ function renderRanking(lista){
     document.getElementById('rank-list-wrap').innerHTML='<div class="empty">Nenhum dado.</div>';
     return;
   }
-  // Calcula tendência comparando com rankingAnterior
-  var tendencia={};
-  lista.forEach(function(j,i){
-    var pos=i+1;
-    if(rankingAnterior[j.nome]!==undefined){
-      var diff=rankingAnterior[j.nome]-pos;
-      tendencia[j.nome]=diff>0?'up':diff<0?'down':'same';
-    } else {
-      tendencia[j.nome]='same';
-    }
-    rankingAnterior[j.nome]=pos;
-  });
-
-  // Lista unificada — top 3 com cores diferenciadas
   var html='';
   lista.forEach(function(j,i){
     var pos=i+1;
@@ -380,10 +364,16 @@ function renderRanking(lista){
     var media=j.mediaFichas||0;
     var mediaCor=media>0?'rank-media-pos':media<0?'rank-media-neg':'';
     var mediaSinal=media>0?'+':'';
-    var t=tendencia[j.nome];
-    var trendHTML=t==='up'?'<span class="trend trend-up">▲ Subiu</span>':
-                  t==='down'?'<span class="trend trend-down">▼ Caiu</span>':
-                  '<span class="trend trend-same">▬ Estável</span>';
+
+    // Tendência baseada na posição anterior vinda do backend
+    var trendHTML='';
+    if(j.posAnterior!==null&&j.posAnterior!==undefined){
+      var diff=j.posAnterior-pos; // positivo = subiu, negativo = caiu
+      if(diff>0) trendHTML='<span class="trend trend-up">▲ '+diff+'</span>';
+      else if(diff<0) trendHTML='<span class="trend trend-down">▼ '+Math.abs(diff)+'</span>';
+      // diff===0: sem exibição (mesma posição)
+    }
+
     var extrasHTML=j.extras>0?'<span class="extras-badge">+'+j.extras+' pts</span>':'';
     var posLabel=pos===1?'👑':pos+'º';
     html+='<div class="rank-row">'+
