@@ -3,113 +3,217 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#2C2C2A">
+<meta name="theme-color" content="#0D2818">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>Poker Ranking</title>
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+:root{
+  --felt:#0D2818;
+  --felt2:#122E1D;
+  --felt3:#1A3D26;
+  --gold:#C9A84C;
+  --gold2:#F0CC6A;
+  --silver:#A8B4A0;
+  --bronze:#B87333;
+  --green-bright:#4ADE80;
+  --red:#F26B6B;
+  --text:#E8F0E4;
+  --text-muted:#7A9A7A;
+  --card:#16341F;
+  --card-border:#1F4A2A;
+  --radius:14px;
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F1EFE8;color:#2C2C2A;min-height:100dvh;display:flex;flex-direction:column}
-.topbar{background:#2C2C2A;color:#fff;padding:env(safe-area-inset-top,14px) 16px 14px;display:flex;align-items:center;justify-content:space-between}
-.topbar-title{font-size:16px;font-weight:600}
-.topbar-sub{font-size:12px;color:#B4B2A9;margin-top:2px}
-.nav{display:flex;background:#fff;border-bottom:1px solid #E8E6DF}
-.nav-btn{flex:1;padding:12px 4px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#888780;border-bottom:2px solid transparent}
-.nav-btn.active{color:#2C2C2A;border-bottom-color:#2C2C2A}
-.content{flex:1;padding:16px;overflow-y:auto}
+body{font-family:'Inter',sans-serif;background:var(--felt);color:var(--text);min-height:100dvh;display:flex;flex-direction:column}
+
+/* TOPBAR */
+.topbar{background:var(--felt2);padding:env(safe-area-inset-top,14px) 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--card-border)}
+.topbar-left{display:flex;flex-direction:column;gap:2px}
+.topbar-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:.5px;color:var(--text)}
+.topbar-title span{color:var(--gold)}
+.topbar-sub{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:5px}
+.topbar-sub::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green-bright);display:inline-block}
+.recorde-badge{background:var(--gold);color:#0D2818;border-radius:8px;padding:5px 10px;display:flex;align-items:center;gap:5px;cursor:pointer}
+.recorde-badge-icon{font-size:14px}
+.recorde-badge-text{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;line-height:1.2;text-align:right}
+
+/* NAV */
+.nav{display:flex;background:var(--felt2);border-bottom:1px solid var(--card-border);padding:0 8px}
+.nav-btn{flex:1;padding:11px 4px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border:none;background:transparent;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s}
+.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* CONTENT */
+.content{flex:1;padding:14px;overflow-y:auto}
 .screen{display:none}.screen.active{display:block}
-.card{background:#fff;border-radius:14px;border:1px solid #E8E6DF;padding:14px;margin-bottom:12px}
-.card-title{font-size:12px;font-weight:600;color:#888780;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-.btn{width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s;margin-top:8px;display:block}
-.btn:active{opacity:.8}
-.btn-dark{background:#2C2C2A;color:#fff}
-.btn-outline{background:#fff;color:#2C2C2A;border:1px solid #D3D1C7}
-.btn-danger{background:#fff;color:#A32D2D;border:1px solid #F09595}
-.btn-sm{width:auto;padding:7px 14px;font-size:13px;border-radius:8px;margin-top:0;display:inline-block}
-.player-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1EFE8}
-.player-row:last-child{border-bottom:none}
-.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;background:#EEEDFE;color:#3C3489}
-.player-name{font-size:14px;font-weight:500;flex:1}
-.fichas-wrap{display:flex;flex-direction:column;align-items:flex-end}
-.fichas-input{-webkit-appearance:none;appearance:none;width:90px;min-width:90px;height:36px;border:1.5px solid #D3D1C7;border-radius:8px;padding:7px 10px;font-size:14px;text-align:center;background:#F8F8F6;color:#2C2C2A;font-weight:500;display:block}
-.fichas-input.pos{border-color:#27500A;background:#C0DD97;color:#1A4A08;font-weight:700}
-.fichas-input.neg{border-color:#D98080;background:#FFF0F0;color:#A32D2D;font-weight:600}
-.fichas-input.zero{border-color:#D3D1C7;background:#F8F8F6;color:#888780}
-.fichas-label{font-size:10px;color:#888780;margin-top:2px;text-align:right}
-.round-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.rtab{padding:6px 14px;border-radius:99px;font-size:13px;font-weight:500;border:1px solid #D3D1C7;background:#fff;cursor:pointer;color:#888780}
-.rtab.active{background:#2C2C2A;color:#fff;border-color:#2C2C2A}
-.rtab.add{border-style:dashed}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.stat-card{background:#fff;border-radius:12px;padding:12px 14px}
-.stat-label{font-size:11px;color:#888780;margin-bottom:4px}
-.stat-val{font-size:22px;font-weight:700;color:#2C2C2A;line-height:1}
-.rank-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1EFE8}
+
+/* PÓDIO */
+.podio{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:16px;padding:0 4px}
+.podio-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;max-width:120px}
+.podio-item.first{order:2}
+.podio-item.second{order:1}
+.podio-item.third{order:3}
+.podio-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;color:#0D2818;flex-shrink:0}
+.podio-item.first .podio-avatar{width:64px;height:64px;font-size:20px;background:linear-gradient(135deg,var(--gold),var(--gold2));box-shadow:0 0 0 3px var(--gold2),0 4px 16px rgba(201,168,76,.4)}
+.podio-item.second .podio-avatar{width:52px;height:52px;font-size:16px;background:linear-gradient(135deg,#8A9E86,#C0CFBC);box-shadow:0 0 0 2px #C0CFBC}
+.podio-item.third .podio-avatar{width:46px;height:46px;font-size:14px;background:linear-gradient(135deg,var(--bronze),#D4934A);box-shadow:0 0 0 2px #D4934A}
+.podio-crown{font-size:18px;line-height:1}
+.podio-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-align:center;letter-spacing:.3px;text-transform:uppercase}
+.podio-item.first .podio-name{color:var(--gold2);font-size:15px}
+.podio-pts{font-family:'Barlow Condensed',sans-serif;font-weight:800;line-height:1}
+.podio-item.first .podio-pts{font-size:24px;color:var(--gold2)}
+.podio-item.second .podio-pts{font-size:20px;color:#C0CFBC}
+.podio-item.third .podio-pts{font-size:18px;color:#D4934A}
+.podio-pts-label{font-size:10px;color:var(--text-muted);text-align:center;margin-top:-4px}
+.podio-base{width:100%;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;padding:8px 0}
+.podio-item.first .podio-base{height:56px;background:linear-gradient(180deg,rgba(201,168,76,.25),rgba(201,168,76,.08));border:1px solid rgba(201,168,76,.3);border-bottom:none}
+.podio-item.second .podio-base{height:40px;background:rgba(168,180,160,.12);border:1px solid rgba(168,180,160,.2);border-bottom:none}
+.podio-item.third .podio-base{height:28px;background:rgba(184,115,51,.12);border:1px solid rgba(184,115,51,.2);border-bottom:none}
+.podio-pos{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;opacity:.6}
+
+/* LISTA DE RANKING */
+.rank-list{background:var(--card);border-radius:var(--radius);border:1px solid var(--card-border);overflow:hidden}
+.rank-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--card-border)}
 .rank-row:last-child{border-bottom:none}
-.pos{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
-.pos-1{background:#FAEEDA;color:#633806}
-.pos-2{background:#F1EFE8;color:#444441}
-.pos-3{background:#FAECE7;color:#712B13}
-.pos-n{background:#F1EFE8;color:#5F5E5A}
-.pts{font-size:15px;font-weight:700;color:#2C2C2A;min-width:36px;text-align:right}
-.badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:3px 8px;border-radius:99px;font-weight:600}
-.badge-green{background:#EAF3DE;color:#27500A}
-.badge-amber{background:#FAEEDA;color:#633806}
-.saldo-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;margin-bottom:12px;font-size:13px;font-weight:600}
-.saldo-ok{background:#EAF3DE;color:#27500A}
-.saldo-err{background:#FFF0F0;color:#A32D2D}
-.pin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
-.pin-overlay.open{display:flex}
-.pin-box{background:#fff;border-radius:20px;padding:28px 24px;width:300px;text-align:center}
-.pin-title{font-size:17px;font-weight:700;margin-bottom:6px}
-.pin-sub{font-size:13px;color:#888780;margin-bottom:20px}
-.pin-input{width:100%;border:1px solid #D3D1C7;border-radius:10px;padding:12px;font-size:20px;text-align:center;letter-spacing:8px;margin-bottom:14px;background:#F8F8F6}
-.pin-err{font-size:13px;color:#A32D2D;margin-bottom:10px;min-height:18px}
-.loader{text-align:center;padding:32px;color:#888780;font-size:14px}
-.empty{text-align:center;padding:32px 16px;color:#B4B2A9;font-size:14px}
-select{width:100%;padding:9px 12px;border:1px solid #D3D1C7;border-radius:8px;font-size:14px;background:#fff;color:#2C2C2A;margin-bottom:10px}
-.field-label{font-size:13px;color:#888780;display:block;margin-bottom:4px}
-.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.section-title{font-size:12px;font-weight:600;color:#888780;text-transform:uppercase;letter-spacing:.5px}
-.check-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F1EFE8;cursor:pointer;user-select:none}
-.check-row:last-child{border-bottom:none}
-.check-box{width:22px;height:22px;border-radius:6px;border:1.5px solid #D3D1C7;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;transition:all .15s}
-.check-box.checked{background:#2C2C2A;border-color:#2C2C2A;color:#fff}
-.etapa-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid #F1EFE8}
+.rank-pos{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--text-muted);width:20px;text-align:center;flex-shrink:0}
+.rank-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;flex-shrink:0;background:var(--felt3);color:var(--text-muted);border:1px solid var(--card-border)}
+.rank-info{flex:1;min-width:0}
+.rank-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-sub{font-size:11px;color:var(--text-muted);margin-top:1px}
+.rank-media-pos{color:var(--green-bright)}
+.rank-media-neg{color:var(--red)}
+.rank-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.rank-pts{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--text);line-height:1}
+.trend{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px;white-space:nowrap}
+.trend-up{background:rgba(74,222,128,.15);color:var(--green-bright)}
+.trend-down{background:rgba(242,107,107,.15);color:var(--red)}
+.trend-same{background:rgba(122,154,122,.12);color:var(--text-muted)}
+.extras-badge{background:rgba(201,168,76,.15);color:var(--gold);font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px}
+
+/* CARDS GENÉRICOS */
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--card-border);padding:14px;margin-bottom:12px}
+.card-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+
+/* ETAPAS */
+.etapa-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--card-border)}
 .etapa-row:last-child{border-bottom:none}
-.tag{font-size:11px;padding:3px 10px;border-radius:99px;background:#EAF3DE;color:#27500A;font-weight:600;display:inline-block;margin-top:4px}
-.tag-andamento{background:#FAEEDA;color:#633806}
-.andamento-box{background:#FAEEDA;border-radius:10px;padding:10px 12px;font-size:12px;color:#633806;margin-bottom:10px}
-.info-box{background:#F1EFE8;border-radius:10px;padding:10px 12px;font-size:12px;color:#5F5E5A;margin-bottom:10px}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+.tag{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;display:inline-block;margin-top:4px}
+.tag-ok{background:rgba(74,222,128,.12);color:var(--green-bright)}
+.tag-andamento{background:rgba(201,168,76,.15);color:var(--gold)}
+
+/* DETALHE */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-card{background:var(--card);border-radius:12px;padding:12px 14px;border:1px solid var(--card-border)}
+.stat-label{font-size:11px;color:var(--text-muted);margin-bottom:4px}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--text);line-height:1}
+.det-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--card-border)}
+.det-row:last-child{border-bottom:none}
+.det-pos{font-family:'Barlow Condensed',sans-serif;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.det-pos-1{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0D2818}
+.det-pos-2{background:rgba(168,180,160,.25);color:#C0CFBC}
+.det-pos-3{background:rgba(184,115,51,.25);color:#D4934A}
+.det-pos-n{background:var(--felt3);color:var(--text-muted)}
+
+/* ADMIN */
+.andamento-box{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--gold);margin-bottom:10px}
+.info-box{background:var(--felt3);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text-muted);margin-bottom:10px;border:1px solid var(--card-border)}
+
+/* BOTÕES */
+.btn{width:100%;padding:13px;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;border:none;transition:opacity .15s;margin-top:8px;display:block}
+.btn:active{opacity:.8}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0D2818}
+.btn-outline{background:transparent;color:var(--text-muted);border:1px solid var(--card-border)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(242,107,107,.3)}
+.btn-sm{width:auto;padding:6px 12px;font-size:13px;border-radius:8px;margin-top:0;display:inline-block}
+
+/* FICHAS / RODADA */
+.round-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.rtab{padding:5px 13px;border-radius:99px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;border:1px solid var(--card-border);background:transparent;cursor:pointer;color:var(--text-muted)}
+.rtab.active{background:var(--gold);color:#0D2818;border-color:var(--gold)}
+.rtab.add{border-style:dashed}
+.saldo-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:10px;margin-bottom:12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700}
+.saldo-ok{background:rgba(74,222,128,.1);color:var(--green-bright);border:1px solid rgba(74,222,128,.2)}
+.saldo-err{background:rgba(242,107,107,.1);color:var(--red);border:1px solid rgba(242,107,107,.2)}
+.player-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--card-border)}
+.player-row:last-child{border-bottom:none}
+.fichas-input{-webkit-appearance:none;appearance:none;width:90px;min-width:90px;height:36px;border:1.5px solid var(--card-border);border-radius:8px;padding:7px 10px;font-size:14px;text-align:center;background:var(--felt3);color:var(--text);font-weight:600;display:block}
+.fichas-input.pos{border-color:var(--green-bright);background:rgba(74,222,128,.1);color:var(--green-bright)}
+.fichas-input.neg{border-color:var(--red);background:rgba(242,107,107,.1);color:var(--red)}
+.fichas-input.zero{border-color:var(--card-border);background:var(--felt3);color:var(--text-muted)}
+.fichas-label{font-size:10px;color:var(--text-muted);margin-top:2px;text-align:right}
+.fichas-wrap{display:flex;flex-direction:column;align-items:flex-end}
+
+/* SELEÇÃO */
+.check-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--card-border);cursor:pointer;user-select:none}
+.check-row:last-child{border-bottom:none}
+.check-box{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--card-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;transition:all .15s}
+.check-box.checked{background:var(--gold);border-color:var(--gold);color:#0D2818}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px}
+
+/* PIN */
+.pin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
+.pin-overlay.open{display:flex}
+.pin-box{background:var(--card);border:1px solid var(--card-border);border-radius:20px;padding:28px 24px;width:300px;text-align:center}
+.pin-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px;color:var(--text)}
+.pin-sub{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+.pin-input{width:100%;border:1px solid var(--card-border);border-radius:10px;padding:12px;font-size:20px;text-align:center;letter-spacing:8px;margin-bottom:14px;background:var(--felt3);color:var(--text)}
+.pin-err{font-size:13px;color:var(--red);margin-bottom:10px;min-height:18px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal-box{background:#fff;border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-height:70vh;overflow-y:auto}
-.modal-title{font-size:16px;font-weight:700;margin-bottom:12px}
+.modal-box{background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-height:70vh;overflow-y:auto;border-top:1px solid var(--card-border)}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;margin-bottom:12px;color:var(--text)}
+
+/* UTILITÁRIOS */
+.loader{text-align:center;padding:32px;color:var(--text-muted);font-size:14px}
+.empty{text-align:center;padding:32px 16px;color:var(--text-muted);font-size:14px}
+select{width:100%;padding:9px 12px;border:1px solid var(--card-border);border-radius:8px;font-size:14px;background:var(--felt3);color:var(--text);margin-bottom:10px}
+.field-label{font-size:13px;color:var(--text-muted);display:block;margin-bottom:4px}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;flex-shrink:0;background:var(--felt3);color:var(--text-muted);border:1px solid var(--card-border)}
+.badge-gold{background:rgba(201,168,76,.15);color:var(--gold);font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;display:inline-flex;align-items:center}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 </style>
 </head>
 <body>
+
 <div class="topbar">
-  <div><div class="topbar-title">Poker Ranking</div><div class="topbar-sub" id="etapa-label">Carregando...</div></div>
-  <div id="admin-badge" style="display:none"><span class="badge badge-amber">Admin</span></div>
+  <div class="topbar-left">
+    <div class="topbar-title"><span>APT</span> Poker Ranking</div>
+    <div class="topbar-sub" id="etapa-label">Carregando...</div>
+  </div>
+  <div id="recorde-bar" style="display:none" onclick="mostrarRecorde()">
+    <div class="recorde-badge">
+      <div class="recorde-badge-icon">🏆</div>
+      <div class="recorde-badge-text" id="recorde-display">—</div>
+    </div>
+  </div>
 </div>
+
 <div class="nav">
   <button class="nav-btn active" onclick="showScreen('ranking')">Ranking</button>
   <button class="nav-btn" onclick="carregarEtapas();showScreen('etapas')">Etapas</button>
   <button class="nav-btn" onclick="carregarAdminPublico()">Admin</button>
 </div>
+
 <div class="content">
 
+  <!-- RANKING -->
   <div id="s-ranking" class="screen active">
-    <div id="recorde-bar" class="info-box" style="display:none">🏆 Recorde anual: <strong id="recorde-display"></strong></div>
-    <div class="card"><div id="ranking-list"><div class="loader">Carregando ranking...</div></div></div>
+    <div id="podio-wrap"></div>
+    <div id="rank-list-wrap" class="rank-list"></div>
   </div>
 
+  <!-- ETAPAS -->
   <div id="s-etapas" class="screen">
-    <div class="card"><div id="etapas-list"><div class="loader">Carregando etapas...</div></div></div>
+    <div class="card"><div id="etapas-list"><div class="loader">Carregando...</div></div></div>
   </div>
 
+  <!-- DETALHE -->
   <div id="s-detalhe" class="screen">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">Rodadas</div><div class="stat-val" id="det-rodadas">—</div></div>
@@ -120,6 +224,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <button class="btn btn-outline" onclick="showScreen('etapas')">← Voltar</button>
   </div>
 
+  <!-- ADMIN -->
   <div id="s-admin" class="screen">
     <div id="andamento-aviso" style="display:none" class="andamento-box">
       ⚠️ Etapa em andamento: <strong id="andamento-label"></strong><br>
@@ -129,13 +234,14 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div class="card-title">Nova etapa</div>
       <label class="field-label">Data da etapa</label>
       <select id="sel-data"></select>
-      <button class="btn btn-dark" onclick="acaoComPin(irParaSelecaoJogadores)">Selecionar jogadores →</button>
+      <button class="btn btn-gold" onclick="acaoComPin(irParaSelecaoJogadores)">Selecionar jogadores →</button>
       <button id="btn-retomar" class="btn btn-outline" style="display:none" onclick="acaoComPin(retomarAndamento)">Retomar etapa em andamento</button>
       <button id="btn-descartar" class="btn btn-danger" style="display:none" onclick="acaoComPin(descartarAndamento)">Descartar etapa em andamento</button>
       <button class="btn btn-outline" style="margin-top:16px" onclick="sairAdmin()">Sair do modo admin</button>
     </div>
   </div>
 
+  <!-- SELEÇÃO -->
   <div id="s-selecao" class="screen">
     <div class="card">
       <div class="section-header">
@@ -144,12 +250,13 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       </div>
       <div id="lista-selecao"></div>
     </div>
-    <button class="btn btn-dark" onclick="confirmarSelecao()">Iniciar rodadas →</button>
+    <button class="btn btn-gold" onclick="confirmarSelecao()">Iniciar rodadas →</button>
     <button class="btn btn-outline" onclick="showScreen('admin')">Voltar</button>
   </div>
 
+  <!-- RODADA -->
   <div id="s-rodada" class="screen">
-    <div style="font-size:13px;color:#888780;margin-bottom:8px" id="rodada-titulo"></div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px" id="rodada-titulo"></div>
     <div class="round-tabs" id="round-tabs"></div>
     <div id="saldo-bar" class="saldo-bar saldo-ok">Total: 0 ✓</div>
     <div class="card">
@@ -159,11 +266,12 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       </div>
       <div id="jogadores-rodada"></div>
     </div>
-    <button class="btn btn-dark" onclick="finalizarRodada()">Próxima rodada →</button>
+    <button class="btn btn-gold" onclick="finalizarRodada()">Próxima rodada →</button>
     <button class="btn btn-outline" onclick="verResultado()">Ver resultado da etapa</button>
     <button class="btn btn-danger" onclick="cancelarEtapa()">Cancelar etapa</button>
   </div>
 
+  <!-- RESULTADO -->
   <div id="s-resultado" class="screen">
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">Rodadas</div><div class="stat-val" id="res-rodadas">0</div></div>
@@ -171,51 +279,52 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     </div>
     <div class="card"><div class="card-title" id="res-titulo"></div><div id="resultado-list"></div></div>
     <div id="extra-resultado" style="margin-bottom:8px"></div>
-    <button class="btn btn-dark" onclick="salvarEtapa()">Confirmar e salvar no ranking</button>
+    <button class="btn btn-gold" onclick="salvarEtapa()">Confirmar e salvar no ranking</button>
     <button class="btn btn-outline" onclick="showScreen('rodada')">Voltar às rodadas</button>
   </div>
 
 </div>
 
+<!-- PIN -->
 <div class="pin-overlay" id="pin-overlay">
   <div class="pin-box">
-    <div class="pin-title">Modo administrador</div>
-    <div class="pin-sub">Digite o PIN para acessar</div>
+    <div class="pin-title">🔐 Modo Admin</div>
+    <div class="pin-sub">Digite o PIN para continuar</div>
     <input class="pin-input" type="password" inputmode="numeric" maxlength="6" id="pin-input" placeholder="••••">
     <div class="pin-err" id="pin-err"></div>
-    <button class="btn btn-dark" onclick="verificarPin()" style="margin-top:0">Entrar</button>
+    <button class="btn btn-gold" onclick="verificarPin()" style="margin-top:0">Entrar</button>
     <button class="btn btn-outline" onclick="fecharPin()">Cancelar</button>
   </div>
 </div>
 
+<!-- MODAL JOGADORES -->
 <div class="modal-overlay" id="modal-jogadores">
   <div class="modal-box">
-    <div class="modal-title">Adicionar jogador à rodada</div>
+    <div class="modal-title">Adicionar jogador</div>
     <div id="modal-lista"></div>
     <button class="btn btn-outline" style="margin-top:12px" onclick="fecharModal()">Fechar</button>
   </div>
 </div>
 
 <script>
-var API_URL   = "https://script.google.com/macros/s/AKfycbyZ2kM5CAwPktGTe7ANp2fdBlagQJfwNDDB4VyCla8_UH7hfaSN-BrBuxT4H7ZPcUulfw/exec";
+var API_URL   = https://script.google.com/macros/s/AKfycbyZ2kM5CAwPktGTe7ANp2fdBlagQJfwNDDB4VyCla8_UH7hfaSN-BrBuxT4H7ZPcUulfw/exec";
 var PIN_ADMIN = "1274";
 
-var TODAS_ETAPAS = ["10/jan","30/jan","20/fev","28/fev","13/mar","27/mar","10/abr","24/abr","08/mai","29/mai","12/jun","28/jun","11/jul","25/jul","15/ago","29/ago","05/set","26/set","17/out","31/out","14/nov","28/nov","18/dez","19/dez"];
-
+var TODAS_ETAPAS=["10/jan","30/jan","20/fev","28/fev","13/mar","27/mar","10/abr","24/abr","08/mai","29/mai","12/jun","28/jun","11/jul","25/jul","15/ago","29/ago","05/set","26/set","17/out","31/out","14/nov","28/nov","18/dez","19/dez"];
 var PONTOS=[25,18,15,12,10,8,6,4,2];
 function getPontos(pos){ return pos<=PONTOS.length?PONTOS[pos-1]:1; }
 
-// ── SESSÃO ADMIN ──────────────────────────────
-// Lê sessão antes de qualquer coisa
-var isAdmin = sessionStorage.getItem('pokerAdmin')==='1';
+var isAdmin=sessionStorage.getItem('pokerAdmin')==='1';
 var rodadaAtual=0, jogadoresCadastrados=[];
 var etapaAtual={data:"",rodadas:[],jogadoresSelecionados:[]};
 var recordeAtual={fichas:0,jogador:""};
 var etapasAndamento=[];
+var acaoPendente=null;
+// Guarda classificação da última vez que o ranking foi carregado, para calcular tendência
+var rankingAnterior={};
 
 window.onload=function(){
-  // Restaura badge se já era admin
-  if(isAdmin) document.getElementById('admin-badge').style.display='block';
+  if(isAdmin) document.getElementById('admin-badge') && (document.getElementById('admin-badge').style.display='block');
   carregarRanking();
   carregarEtapas();
 };
@@ -236,11 +345,11 @@ function carregarRanking(){
     .then(function(d){
       var jogs=d.jogadores||[];
       var ef=(d.etapas||[]).length;
-      document.getElementById('etapa-label').textContent=ef+' etapas realizadas';
+      document.getElementById('etapa-label').textContent=ef+' etapas realizadas em 2026';
       renderRanking(jogs);
     })
     .catch(function(){
-      document.getElementById('ranking-list').innerHTML='<div class="empty">Sem conexão.</div>';
+      document.getElementById('rank-list-wrap').innerHTML='<div class="empty">Sem conexão.</div>';
       document.getElementById('etapa-label').textContent='Offline';
     });
   fetch(API_URL+'?acao=recorde')
@@ -248,27 +357,86 @@ function carregarRanking(){
     .then(function(d){
       if(d.jogador){
         recordeAtual={fichas:d.fichas,jogador:d.jogador};
-        document.getElementById('recorde-display').textContent=d.fichas.toLocaleString('pt-BR')+' fichas ('+d.jogador+')';
+        document.getElementById('recorde-display').innerHTML='RECORDE ANUAL<br>'+d.fichas.toLocaleString('pt-BR')+' ('+d.jogador+')';
         document.getElementById('recorde-bar').style.display='block';
       }
     }).catch(function(){});
 }
 
+function mostrarRecorde(){
+  alert('🏆 Recorde anual\n'+recordeAtual.fichas.toLocaleString('pt-BR')+' fichas\n'+recordeAtual.jogador);
+}
+
 function renderRanking(lista){
-  var el=document.getElementById('ranking-list');
-  if(!lista.length){ el.innerHTML='<div class="empty">Nenhum dado.</div>'; return; }
-  el.innerHTML=lista.map(function(j,i){
-    var pc=i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
-    var eb=j.extras>0?'<span class="badge badge-amber" style="margin-right:6px">+'+j.extras+'</span>':'';
+  if(!lista.length){
+    document.getElementById('podio-wrap').innerHTML='';
+    document.getElementById('rank-list-wrap').innerHTML='<div class="empty">Nenhum dado.</div>';
+    return;
+  }
+  // Calcula tendência comparando com rankingAnterior
+  var tendencia={};
+  lista.forEach(function(j,i){
+    var pos=i+1;
+    if(rankingAnterior[j.nome]!==undefined){
+      var diff=rankingAnterior[j.nome]-pos;
+      tendencia[j.nome]=diff>0?'up':diff<0?'down':'same';
+    } else {
+      tendencia[j.nome]='same';
+    }
+    rankingAnterior[j.nome]=pos;
+  });
+
+  // Pódio (top 3)
+  var top=lista.slice(0,3);
+  var podioHTML='<div class="podio">';
+  var ordemPodio=[
+    top[1]?{j:top[1],cls:'second',pos:'2º',crown:''}:{j:null},
+    top[0]?{j:top[0],cls:'first',pos:'1º',crown:'👑'}:{j:null},
+    top[2]?{j:top[2],cls:'third',pos:'3º',crown:''}:{j:null}
+  ];
+  ordemPodio.forEach(function(item){
+    if(!item.j) return;
+    var j=item.j;
     var media=j.mediaFichas||0;
-    var mediaCor=media>0?'#27500A':media<0?'#A32D2D':'#888780';
     var mediaSinal=media>0?'+':'';
-    return '<div class="rank-row"><div class="pos '+pc+'">'+(i+1)+'</div>'+
-      '<div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div>'+
-      '<div class="player-name">'+j.nome+'<br><span style="font-size:11px;color:#888780">'+j.jogos+' etapas · média '+
-      '<span style="color:'+mediaCor+';font-weight:600">'+mediaSinal+media.toLocaleString('pt-BR')+'</span></span></div>'+
-      eb+'<div class="pts">'+j.total+'</div></div>';
-  }).join('');
+    podioHTML+='<div class="podio-item '+item.cls+'">'+
+      (item.crown?'<div class="podio-crown">'+item.crown+'</div>':'')+
+      '<div class="podio-avatar">'+j.nome.substring(0,2).toUpperCase()+'</div>'+
+      '<div class="podio-name">'+j.nome+'</div>'+
+      '<div class="podio-pts">'+j.total+'</div>'+
+      '<div class="podio-pts-label">pontos</div>'+
+      '<div class="podio-base"><span class="podio-pos">'+item.pos+'</span></div>'+
+    '</div>';
+  });
+  podioHTML+='</div>';
+  document.getElementById('podio-wrap').innerHTML=podioHTML;
+
+  // Lista (4º em diante)
+  var restHTML='';
+  lista.slice(3).forEach(function(j,i){
+    var pos=i+4;
+    var media=j.mediaFichas||0;
+    var mediaCor=media>0?'rank-media-pos':media<0?'rank-media-neg':'';
+    var mediaSinal=media>0?'+':'';
+    var t=tendencia[j.nome];
+    var trendHTML=t==='up'?'<span class="trend trend-up">▲ Subiu</span>':
+                  t==='down'?'<span class="trend trend-down">▼ Caiu</span>':
+                  '<span class="trend trend-same">▬ Estável</span>';
+    var extrasHTML=j.extras>0?'<span class="extras-badge">+'+j.extras+' pts</span>':'';
+    restHTML+='<div class="rank-row">'+
+      '<div class="rank-pos">'+pos+'º</div>'+
+      '<div class="rank-avatar">'+j.nome.substring(0,2).toUpperCase()+'</div>'+
+      '<div class="rank-info">'+
+        '<div class="rank-name">'+j.nome+'</div>'+
+        '<div class="rank-sub">'+j.jogos+' etapas · média <span class="'+mediaCor+'">'+mediaSinal+media.toLocaleString('pt-BR')+'</span></div>'+
+      '</div>'+
+      '<div class="rank-right">'+
+        '<div class="rank-pts">'+j.total+'</div>'+
+        (extrasHTML||trendHTML)+
+      '</div>'+
+    '</div>';
+  });
+  document.getElementById('rank-list-wrap').innerHTML=restHTML||'<div class="empty" style="padding:16px">—</div>';
 }
 
 // ── ETAPAS ────────────────────────────────────
@@ -283,12 +451,11 @@ function carregarEtapas(){
       if(!lista.length){ el.innerHTML='<div class="empty">Nenhuma etapa registrada.</div>'; return; }
       el.innerHTML=lista.map(function(e){
         var isA=e.status==='Em andamento';
-        var tc=isA?'tag tag-andamento':'tag';
-        // Apenas botão Ver para todos — Continuar/Excluir ficam só no Admin
+        var tc=isA?'tag tag-andamento':'tag tag-ok';
         var btns='<button class="btn btn-outline btn-sm" onclick="abrirDetalhe(\''+e.data+'\',\''+(isA?'andamento':'finalizada')+'\')">Ver</button>';
         return '<div class="etapa-row"><div style="flex:1">'+
-          '<div style="font-size:14px;font-weight:600">'+e.data+'</div>'+
-          '<div style="font-size:12px;color:#888780">'+e.rodadas+' rodadas · '+e.jogadores+' jogadores</div>'+
+          '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700;letter-spacing:.3px">'+e.data+'</div>'+
+          '<div style="font-size:12px;color:var(--text-muted)">'+e.rodadas+' rodadas · '+e.jogadores+' jogadores</div>'+
           '<span class="'+tc+'">'+e.status+'</span></div>'+
           '<div style="margin-left:8px">'+btns+'</div></div>';
       }).join('');
@@ -296,7 +463,7 @@ function carregarEtapas(){
 }
 
 // ── DETALHE ───────────────────────────────────
-function abrirDetalhe(data, tipo){
+function abrirDetalhe(data,tipo){
   document.getElementById('det-titulo').textContent=(tipo==='andamento'?'Em andamento — ':'Pontuação — ')+data;
   document.getElementById('det-lista').innerHTML='<div class="loader">Carregando...</div>';
   document.getElementById('det-extra').innerHTML='';
@@ -325,16 +492,17 @@ function renderDetalhe(d){
   document.getElementById('det-jogadores').textContent=(d.ranking||[]).length;
   document.getElementById('det-lista').innerHTML=(d.ranking||[]).map(function(j,i){
     var pts=getPontos(i+1)+(d.maiorStack&&j.nome===d.maiorStack.nome?1:0);
-    var pc=i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
+    var pc=i===0?'det-pos-1':i===1?'det-pos-2':i===2?'det-pos-3':'det-pos-n';
     var sinal=j.fichas>0?'+':j.fichas===0?' ':'';
-    var stackBadge=d.maiorStack&&j.nome===d.maiorStack.nome?'<span class="badge badge-green" style="margin-right:6px">+1</span>':'';
-    return '<div class="rank-row"><div class="pos '+pc+'">'+(i+1)+'</div>'+
+    var stackBadge=d.maiorStack&&j.nome===d.maiorStack.nome?'<span class="badge-gold" style="margin-right:6px">+1</span>':'';
+    return '<div class="det-row"><div class="det-pos '+pc+'">'+(i+1)+'</div>'+
       '<div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div>'+
-      '<div class="player-name">'+j.nome+'<br><span style="font-size:11px;color:#888780">saldo: '+sinal+j.fichas+' fichas</span></div>'+
-      stackBadge+'<div class="pts">'+pts+'</div></div>';
+      '<div style="flex:1"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700">'+j.nome+'</div>'+
+      '<div style="font-size:11px;color:var(--text-muted)">saldo: '+sinal+j.fichas+' fichas</div></div>'+
+      stackBadge+'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:18px;font-weight:800;color:var(--gold)">'+pts+'</div></div>';
   }).join('');
   if(d.maiorStack&&d.maiorStack.nome){
-    document.getElementById('det-extra').innerHTML='<div class="info-box">Maior stack: <strong>'+d.maiorStack.nome+'</strong> com '+d.maiorStack.fichas.toLocaleString('pt-BR')+' fichas (+1 pt)</div>';
+    document.getElementById('det-extra').innerHTML='<div class="info-box">Maior stack: <strong style="color:var(--text)">'+d.maiorStack.nome+'</strong> com '+d.maiorStack.fichas.toLocaleString('pt-BR')+' fichas (+1 pt)</div>';
   }
 }
 
@@ -349,21 +517,15 @@ function renderDetalheFromRascunho(rasc){
   });
   var ranking=Object.keys(saldos).map(function(n){ return {nome:n,fichas:saldos[n]}; }).sort(function(a,b){ return b.fichas-a.fichas; });
   renderDetalhe({ranking:ranking,rodadas:rasc.rodadas.length,maiorStack:{nome:maiorStackJog,fichas:maiorStackVal}});
-  document.getElementById('det-extra').innerHTML='<div class="info-box">Resultado parcial · Maior stack: <strong>'+maiorStackJog+'</strong> com '+(maiorStackVal||0).toLocaleString('pt-BR')+' fichas (+1 pt)</div>';
+  document.getElementById('det-extra').innerHTML='<div class="info-box">Resultado parcial · Maior stack: <strong style="color:var(--text)">'+maiorStackJog+'</strong> com '+(maiorStackVal||0).toLocaleString('pt-BR')+' fichas (+1 pt)</div>';
 }
 
 // ── PIN / ADMIN ───────────────────────────────
-var acaoPendente=null;
-
-// Abre a tela Admin para qualquer usuário, sem exigir PIN.
-// Mostra o status (etapa em andamento, próxima etapa) normalmente.
 function carregarAdminPublico(){
   carregarJogadores();
   carregarAdmin();
 }
 
-// Executa uma ação protegida: se já autenticado, executa direto;
-// senão, guarda a ação e pede o PIN primeiro.
 function acaoComPin(fn){
   if(isAdmin){ fn(); return; }
   acaoPendente=fn;
@@ -387,7 +549,6 @@ function verificarPin(){
     isAdmin=true;
     sessionStorage.setItem('pokerAdmin','1');
     document.getElementById('pin-overlay').classList.remove('open');
-    document.getElementById('admin-badge').style.display='block';
     carregarJogadores();
     var fn=acaoPendente; acaoPendente=null;
     if(fn) fn(); else carregarAdmin();
@@ -396,13 +557,11 @@ function verificarPin(){
     document.getElementById('pin-input').value='';
   }
 }
-
 document.getElementById('pin-input').addEventListener('keydown',function(e){ if(e.key==='Enter') verificarPin(); });
 
 function sairAdmin(){
   isAdmin=false;
   sessionStorage.removeItem('pokerAdmin');
-  document.getElementById('admin-badge').style.display='none';
   showScreen('ranking');
 }
 
@@ -436,18 +595,15 @@ function carregarAdmin(){
     sel.innerHTML=TODAS_ETAPAS.map(function(d){ return '<option value="'+d+'">'+d+'</option>'; }).join('');
     var proxima=TODAS_ETAPAS.find(function(d){ return finalizadas.indexOf(d)===-1; });
     if(proxima) sel.value=proxima;
-    var recEl=document.getElementById('recorde-display');
-    if(recEl) recEl.textContent=recordeAtual.fichas.toLocaleString('pt-BR')+' fichas ('+recordeAtual.jogador+')';
     showScreen('admin');
   });
 }
 
 var salvandoRascunho=false;
-
 function salvarRascunho(dados){
   if(!dados||salvandoRascunho) return;
   salvandoRascunho=true;
-  fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+  fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({acao:'salvarRascunho',rascunho:dados})
   }).finally(function(){ salvandoRascunho=false; });
 }
@@ -456,29 +612,25 @@ function retomarAndamento(){
   if(etapasAndamento.length===0) return;
   continuarAndamento(etapasAndamento[etapasAndamento.length-1].data);
 }
-
 function descartarAndamento(){
   if(etapasAndamento.length===0) return;
   deletarAndamento(etapasAndamento[etapasAndamento.length-1].data);
 }
-
 function continuarAndamento(data){
   fetch(API_URL+'?acao=rascunhos')
     .then(function(r){ return r.json(); })
     .then(function(d){
       var found=(d.rascunhos||[]).find(function(r){ return r.data===data; });
       if(found&&found.dados){
-        etapaAtual=found.dados;
-        etapaAtual.data=data;
+        etapaAtual=found.dados; etapaAtual.data=data;
         rodadaAtual=Math.max(0,etapaAtual.rodadas.length-1);
         renderRodada(); showScreen('rodada');
       } else { alert('Dados não encontrados.'); }
     });
 }
-
 function deletarAndamento(data){
   if(!confirm('Excluir etapa em andamento ('+data+')?')) return;
-  fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+  fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({acao:'excluirRascunho',data:data})
   }).then(function(){ setTimeout(function(){ carregarEtapas(); carregarAdmin(); },1500); });
 }
@@ -489,23 +641,20 @@ function irParaSelecaoJogadores(){
   etapaAtual={data:data,rodadas:[],jogadoresSelecionados:[]};
   rodadaAtual=0; renderSelecao(); showScreen('selecao');
 }
-
 function renderSelecao(){
   document.getElementById('lista-selecao').innerHTML=jogadoresCadastrados.map(function(n){
     var checked=etapaAtual.jogadoresSelecionados.indexOf(n)>-1;
     return '<div class="check-row" onclick="toggleJogador(\''+n+'\',this)">'+
       '<div class="check-box'+(checked?' checked':'')+'">'+( checked?'✓':'')+'</div>'+
-      '<div class="avatar" style="width:32px;height:32px;font-size:11px">'+n.substring(0,2).toUpperCase()+'</div>'+
-      '<div class="player-name">'+n+'</div></div>';
+      '<div class="avatar">'+n.substring(0,2).toUpperCase()+'</div>'+
+      '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700">'+n+'</div></div>';
   }).join('');
 }
-
 function toggleJogador(nome,row){
   var box=row.querySelector('.check-box'), idx=etapaAtual.jogadoresSelecionados.indexOf(nome);
   if(idx===-1){ etapaAtual.jogadoresSelecionados.push(nome); box.classList.add('checked'); box.textContent='✓'; }
   else { etapaAtual.jogadoresSelecionados.splice(idx,1); box.classList.remove('checked'); box.textContent=''; }
 }
-
 function addNovoJogadorSelecao(){
   var nome=prompt("Nome do novo jogador:"); if(!nome) return;
   nome=nome.trim().toUpperCase();
@@ -513,26 +662,25 @@ function addNovoJogadorSelecao(){
   if(etapaAtual.jogadoresSelecionados.indexOf(nome)===-1) etapaAtual.jogadoresSelecionados.push(nome);
   renderSelecao();
 }
-
 function confirmarSelecao(){
   if(etapaAtual.jogadoresSelecionados.length<2){ alert('Selecione ao menos 2 jogadores.'); return; }
   etapaAtual.rodadas=[etapaAtual.jogadoresSelecionados.map(function(n){ return {nome:n,fichas:0}; })];
   rodadaAtual=0; salvarRascunho(etapaAtual); renderRodada(); showScreen('rodada');
 }
 
-// ── MODAL JOGADORES ───────────────────────────
+// ── MODAL ─────────────────────────────────────
 function abrirModalJogadores(){
   var naRodada=etapaAtual.rodadas[rodadaAtual].map(function(j){ return j.nome; });
   var disp=jogadoresCadastrados.filter(function(n){ return naRodada.indexOf(n)===-1; });
   var el=document.getElementById('modal-lista');
   el.innerHTML=(disp.length?disp.map(function(n){
     return '<div class="check-row" onclick="addJogadorDaLista(\''+n+'\')">'+
-      '<div class="avatar" style="width:32px;height:32px;font-size:11px">'+n.substring(0,2).toUpperCase()+'</div>'+
-      '<div class="player-name">'+n+'</div>'+
-      '<span style="font-size:12px;color:#888780">+ adicionar</span></div>';
-  }).join(''):'<div class="empty">Todos os jogadores já estão nesta rodada.</div>')+
-  '<div style="border-top:1px solid #F1EFE8;margin-top:8px;padding-top:8px">'+
-  '<button class="btn btn-outline" onclick="addNovoJogadorRodada()">+ Cadastrar novo jogador</button></div>';
+      '<div class="avatar">'+n.substring(0,2).toUpperCase()+'</div>'+
+      '<div style="flex:1;font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700">'+n+'</div>'+
+      '<span style="font-size:12px;color:var(--text-muted)">+ adicionar</span></div>';
+  }).join(''):'<div class="empty">Todos já estão nesta rodada.</div>')+
+  '<div style="border-top:1px solid var(--card-border);margin-top:8px;padding-top:8px">'+
+  '<button class="btn btn-outline" onclick="addNovoJogadorRodada()">+ Novo jogador</button></div>';
   document.getElementById('modal-jogadores').classList.add('open');
 }
 function fecharModal(){ document.getElementById('modal-jogadores').classList.remove('open'); }
@@ -555,14 +703,13 @@ function renderRodada(){
   document.getElementById('jogadores-rodada').innerHTML=jogs.map(function(j,i){
     var v=j.fichas, cls=v>0?'pos':v<0?'neg':'zero';
     return '<div class="player-row"><div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div>'+
-      '<div class="player-name">'+j.nome+'</div>'+
+      '<div style="flex:1;font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700">'+j.nome+'</div>'+
       '<div class="fichas-wrap"><input class="fichas-input '+cls+'" type="number" placeholder="—" '+
       (v!==0?'value="'+v+'"':'')+' oninput="atualizarFicha('+i+',this)">'+
       '<div class="fichas-label">fichas</div></div></div>';
   }).join('');
   atualizarSaldo();
 }
-
 function atualizarFicha(i,el){
   var v=parseInt(el.value)||0;
   etapaAtual.rodadas[rodadaAtual][i].fichas=v;
@@ -571,23 +718,19 @@ function atualizarFicha(i,el){
   clearTimeout(window._saveTimer);
   window._saveTimer=setTimeout(function(){ salvarRascunho(etapaAtual); },1500);
 }
-
 function atualizarSaldo(){
   var total=etapaAtual.rodadas[rodadaAtual].reduce(function(a,j){ return a+j.fichas; },0);
   var bar=document.getElementById('saldo-bar');
   bar.className='saldo-bar '+(total===0?'saldo-ok':'saldo-err');
   bar.textContent='Total da rodada: '+(total>0?'+':'')+total+(total===0?' ✓':' ✗ (deve ser 0)');
 }
-
 function trocarRodada(i){ rodadaAtual=i; renderRodada(); }
-
 function addRodada(){
   var prev=etapaAtual.rodadas[rodadaAtual];
   etapaAtual.rodadas.push(prev.map(function(j){ return {nome:j.nome,fichas:0}; }));
   rodadaAtual=etapaAtual.rodadas.length-1;
   salvarRascunho(etapaAtual); renderRodada();
 }
-
 function finalizarRodada(){
   var total=etapaAtual.rodadas[rodadaAtual].reduce(function(a,j){ return a+j.fichas; },0);
   if(total!==0&&!confirm('Total da rodada é '+total+' (deveria ser 0). Continuar?')) return;
@@ -595,21 +738,18 @@ function finalizarRodada(){
   var prev=etapaAtual.rodadas[rodadaAtual];
   etapaAtual.rodadas.push(prev.map(function(j){ return {nome:j.nome,fichas:0}; }));
   rodadaAtual=etapaAtual.rodadas.length-1;
-  fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+  fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({acao:'salvarRascunho',rascunho:etapaAtual})
   }).catch(function(){
-    fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({acao:'salvarRascunho',rascunho:estadoAtual})
-    });
+    fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({acao:'salvarRascunho',rascunho:estadoAtual})});
   });
   renderRodada();
 }
-
 function cancelarEtapa(){
   if(confirm('Cancelar e descartar esta etapa?')){
-    fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
-      body:JSON.stringify({acao:'excluirRascunho',data:etapaAtual.data})
-    });
+    fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({acao:'excluirRascunho',data:etapaAtual.data})});
     etapaAtual={data:"",rodadas:[],jogadoresSelecionados:[]};
     showScreen('admin');
   }
@@ -628,7 +768,6 @@ function calcularResultado(){
   var novoRecorde=maiorStackVal>recordeAtual.fichas?{nome:maiorStackJog,fichas:maiorStackVal}:null;
   return {ranking:ranking,novoRecorde:novoRecorde,maiorStack:{nome:maiorStackJog,fichas:maiorStackVal}};
 }
-
 function verResultado(){
   var r=calcularResultado();
   document.getElementById('res-rodadas').textContent=etapaAtual.rodadas.length;
@@ -636,13 +775,14 @@ function verResultado(){
   document.getElementById('res-titulo').textContent='Pontuação — '+etapaAtual.data;
   document.getElementById('resultado-list').innerHTML=r.ranking.map(function(j,i){
     var pts=getPontos(i+1)+(j.nome===r.maiorStack.nome?1:0);
-    var pc=i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
+    var pc=i===0?'det-pos-1':i===1?'det-pos-2':i===2?'det-pos-3':'det-pos-n';
     var sinal=j.fichas>0?'+':j.fichas===0?' ':'';
-    var stackBadge=j.nome===r.maiorStack.nome?'<span class="badge badge-green" style="margin-right:6px">+1</span>':'';
-    return '<div class="rank-row"><div class="pos '+pc+'">'+(i+1)+'</div>'+
+    var stackBadge=j.nome===r.maiorStack.nome?'<span class="badge-gold" style="margin-right:6px">+1</span>':'';
+    return '<div class="det-row"><div class="det-pos '+pc+'">'+(i+1)+'</div>'+
       '<div class="avatar">'+j.nome.substring(0,2).toUpperCase()+'</div>'+
-      '<div class="player-name">'+j.nome+'<br><span style="font-size:11px;color:#888780">saldo: '+sinal+j.fichas+' fichas</span></div>'+
-      stackBadge+'<div class="pts">'+pts+'</div></div>';
+      '<div style="flex:1"><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700">'+j.nome+'</div>'+
+      '<div style="font-size:11px;color:var(--text-muted)">saldo: '+sinal+j.fichas+' fichas</div></div>'+
+      stackBadge+'<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:18px;font-weight:800;color:var(--gold)">'+pts+'</div></div>';
   }).join('');
   var extraEl=document.getElementById('extra-resultado');
   if(r.novoRecorde){
@@ -651,16 +791,15 @@ function verResultado(){
       :'🏆 Novo recorde! '+r.novoRecorde.nome+' com '+r.novoRecorde.fichas.toLocaleString('pt-BR')+' fichas. +5 pts para '+r.novoRecorde.nome+', -5 pts de '+recordeAtual.jogador+'.';
     extraEl.innerHTML='<div class="andamento-box">'+msg+'</div>';
   } else {
-    extraEl.innerHTML='<div class="info-box">Maior stack: <strong>'+r.maiorStack.nome+'</strong> com '+r.maiorStack.fichas.toLocaleString('pt-BR')+' fichas (+1 pt).</div>';
+    extraEl.innerHTML='<div class="info-box">Maior stack: <strong style="color:var(--text)">'+r.maiorStack.nome+'</strong> com '+r.maiorStack.fichas.toLocaleString('pt-BR')+' fichas (+1 pt).</div>';
   }
   showScreen('resultado');
 }
-
 function salvarEtapa(){
   var r=calcularResultado();
-  var btn=document.querySelector('#s-resultado .btn-dark');
+  var btn=document.querySelector('#s-resultado .btn-gold');
   btn.textContent='Salvando...'; btn.disabled=true;
-  fetch(API_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'},
+  fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
     body:JSON.stringify({acao:'salvarEtapa',data:etapaAtual.data,rodadas:etapaAtual.rodadas,ranking:r.ranking,maiorStack:r.maiorStack,novoRecorde:r.novoRecorde,recordeAtual:recordeAtual})
   }).then(function(){
     if(r.novoRecorde){ recordeAtual=r.novoRecorde.nome!==recordeAtual.jogador?{fichas:r.novoRecorde.fichas,jogador:r.novoRecorde.nome}:{fichas:r.novoRecorde.fichas,jogador:recordeAtual.jogador}; }
