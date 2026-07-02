@@ -50,48 +50,36 @@ body{font-family:'Inter',sans-serif;background:var(--felt);color:var(--text);min
 .content{flex:1;padding:14px;overflow-y:auto}
 .screen{display:none}.screen.active{display:block}
 
-/* PÓDIO */
-.podio{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:16px;padding:0 4px}
-.podio-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;max-width:120px}
-.podio-item.first{order:2}
-.podio-item.second{order:1}
-.podio-item.third{order:3}
-.podio-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;color:#0D2818;flex-shrink:0}
-.podio-item.first .podio-avatar{width:64px;height:64px;font-size:20px;background:linear-gradient(135deg,var(--gold),var(--gold2));box-shadow:0 0 0 3px var(--gold2),0 4px 16px rgba(201,168,76,.4)}
-.podio-item.second .podio-avatar{width:52px;height:52px;font-size:16px;background:linear-gradient(135deg,#8A9E86,#C0CFBC);box-shadow:0 0 0 2px #C0CFBC}
-.podio-item.third .podio-avatar{width:46px;height:46px;font-size:14px;background:linear-gradient(135deg,var(--bronze),#D4934A);box-shadow:0 0 0 2px #D4934A}
-.podio-crown{font-size:18px;line-height:1}
-.podio-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;text-align:center;letter-spacing:.3px;text-transform:uppercase}
-.podio-item.first .podio-name{color:var(--gold2);font-size:15px}
-.podio-pts{font-family:'Barlow Condensed',sans-serif;font-weight:800;line-height:1}
-.podio-item.first .podio-pts{font-size:24px;color:var(--gold2)}
-.podio-item.second .podio-pts{font-size:20px;color:#C0CFBC}
-.podio-item.third .podio-pts{font-size:18px;color:#D4934A}
-.podio-pts-label{font-size:10px;color:var(--text-muted);text-align:center;margin-top:-4px}
-.podio-base{width:100%;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;padding:8px 0}
-.podio-item.first .podio-base{height:56px;background:linear-gradient(180deg,rgba(201,168,76,.25),rgba(201,168,76,.08));border:1px solid rgba(201,168,76,.3);border-bottom:none}
-.podio-item.second .podio-base{height:40px;background:rgba(168,180,160,.12);border:1px solid rgba(168,180,160,.2);border-bottom:none}
-.podio-item.third .podio-base{height:28px;background:rgba(184,115,51,.12);border:1px solid rgba(184,115,51,.2);border-bottom:none}
-.podio-pos{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;opacity:.6}
-
 /* LISTA DE RANKING */
 .rank-list{background:var(--card);border-radius:var(--radius);border:1px solid var(--card-border);overflow:hidden}
-.rank-row{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--card-border)}
+.rank-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--card-border)}
 .rank-row:last-child{border-bottom:none}
-.rank-pos{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--text-muted);width:20px;text-align:center;flex-shrink:0}
-.rank-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;flex-shrink:0;background:var(--felt3);color:var(--text-muted);border:1px solid var(--card-border)}
+.rank-pos{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--text-muted);width:24px;text-align:center;flex-shrink:0}
+.rank-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;flex-shrink:0;border:2px solid var(--card-border)}
+.rank-avatar-1{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0D2818;border-color:var(--gold2);box-shadow:0 0 10px rgba(201,168,76,.35)}
+.rank-avatar-2{background:linear-gradient(135deg,#8A9E86,#C0CFBC);color:#0D2818;border-color:#C0CFBC}
+.rank-avatar-3{background:linear-gradient(135deg,var(--bronze),#D4934A);color:#0D2818;border-color:#D4934A}
+.rank-avatar-n{background:var(--felt3);color:var(--text-muted)}
 .rank-info{flex:1;min-width:0}
-.rank-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rank-sub{font-size:11px;color:var(--text-muted);margin-top:1px}
+.rank-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-name-1{color:var(--gold2)}
+.rank-name-2{color:#C0CFBC}
+.rank-name-3{color:#D4934A}
+.rank-name-n{color:var(--text)}
+.rank-sub{font-size:12px;color:var(--text-muted);margin-top:2px}
 .rank-media-pos{color:var(--green-bright)}
 .rank-media-neg{color:var(--red)}
-.rank-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
-.rank-pts{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;color:var(--text);line-height:1}
-.trend{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px;white-space:nowrap}
+.rank-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.rank-pts{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;line-height:1}
+.rank-pts-1{color:var(--gold2)}
+.rank-pts-2{color:#C0CFBC}
+.rank-pts-3{color:#D4934A}
+.rank-pts-n{color:var(--text)}
+.trend{font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
 .trend-up{background:rgba(74,222,128,.15);color:var(--green-bright)}
 .trend-down{background:rgba(242,107,107,.15);color:var(--red)}
 .trend-same{background:rgba(122,154,122,.12);color:var(--text-muted)}
-.extras-badge{background:rgba(201,168,76,.15);color:var(--gold);font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px}
+.extras-badge{background:rgba(201,168,76,.15);color:var(--gold);font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px}
 
 /* CARDS GENÉRICOS */
 .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--card-border);padding:14px;margin-bottom:12px}
@@ -204,7 +192,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
   <!-- RANKING -->
   <div id="s-ranking" class="screen active">
-    <div id="podio-wrap"></div>
     <div id="rank-list-wrap" class="rank-list"></div>
   </div>
 
@@ -369,7 +356,6 @@ function mostrarRecorde(){
 
 function renderRanking(lista){
   if(!lista.length){
-    document.getElementById('podio-wrap').innerHTML='';
     document.getElementById('rank-list-wrap').innerHTML='<div class="empty">Nenhum dado.</div>';
     return;
   }
@@ -386,35 +372,11 @@ function renderRanking(lista){
     rankingAnterior[j.nome]=pos;
   });
 
-  // Pódio (top 3)
-  var top=lista.slice(0,3);
-  var podioHTML='<div class="podio">';
-  var ordemPodio=[
-    top[1]?{j:top[1],cls:'second',pos:'2º',crown:''}:{j:null},
-    top[0]?{j:top[0],cls:'first',pos:'1º',crown:'👑'}:{j:null},
-    top[2]?{j:top[2],cls:'third',pos:'3º',crown:''}:{j:null}
-  ];
-  ordemPodio.forEach(function(item){
-    if(!item.j) return;
-    var j=item.j;
-    var media=j.mediaFichas||0;
-    var mediaSinal=media>0?'+':'';
-    podioHTML+='<div class="podio-item '+item.cls+'">'+
-      (item.crown?'<div class="podio-crown">'+item.crown+'</div>':'')+
-      '<div class="podio-avatar">'+j.nome.substring(0,2).toUpperCase()+'</div>'+
-      '<div class="podio-name">'+j.nome+'</div>'+
-      '<div class="podio-pts">'+j.total+'</div>'+
-      '<div class="podio-pts-label">pontos</div>'+
-      '<div class="podio-base"><span class="podio-pos">'+item.pos+'</span></div>'+
-    '</div>';
-  });
-  podioHTML+='</div>';
-  document.getElementById('podio-wrap').innerHTML=podioHTML;
-
-  // Lista (4º em diante)
-  var restHTML='';
-  lista.slice(3).forEach(function(j,i){
-    var pos=i+4;
+  // Lista unificada — top 3 com cores diferenciadas
+  var html='';
+  lista.forEach(function(j,i){
+    var pos=i+1;
+    var sufixo=pos===1?'1':pos===2?'2':pos===3?'3':'n';
     var media=j.mediaFichas||0;
     var mediaCor=media>0?'rank-media-pos':media<0?'rank-media-neg':'';
     var mediaSinal=media>0?'+':'';
@@ -423,20 +385,21 @@ function renderRanking(lista){
                   t==='down'?'<span class="trend trend-down">▼ Caiu</span>':
                   '<span class="trend trend-same">▬ Estável</span>';
     var extrasHTML=j.extras>0?'<span class="extras-badge">+'+j.extras+' pts</span>':'';
-    restHTML+='<div class="rank-row">'+
-      '<div class="rank-pos">'+pos+'º</div>'+
-      '<div class="rank-avatar">'+j.nome.substring(0,2).toUpperCase()+'</div>'+
+    var posLabel=pos===1?'👑':pos+'º';
+    html+='<div class="rank-row">'+
+      '<div class="rank-pos">'+posLabel+'</div>'+
+      '<div class="rank-avatar rank-avatar-'+sufixo+'">'+j.nome.substring(0,2).toUpperCase()+'</div>'+
       '<div class="rank-info">'+
-        '<div class="rank-name">'+j.nome+'</div>'+
+        '<div class="rank-name rank-name-'+sufixo+'">'+j.nome+'</div>'+
         '<div class="rank-sub">'+j.jogos+' etapas · média <span class="'+mediaCor+'">'+mediaSinal+media.toLocaleString('pt-BR')+'</span></div>'+
       '</div>'+
       '<div class="rank-right">'+
-        '<div class="rank-pts">'+j.total+'</div>'+
+        '<div class="rank-pts rank-pts-'+sufixo+'">'+j.total+'</div>'+
         (extrasHTML||trendHTML)+
       '</div>'+
     '</div>';
   });
-  document.getElementById('rank-list-wrap').innerHTML=restHTML||'<div class="empty" style="padding:16px">—</div>';
+  document.getElementById('rank-list-wrap').innerHTML=html;
 }
 
 // ── ETAPAS ────────────────────────────────────
