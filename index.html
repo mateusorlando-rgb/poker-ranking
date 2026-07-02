@@ -408,7 +408,7 @@ function carregarEtapas(){
         var btns='<button class="btn btn-outline btn-sm" onclick="abrirDetalhe(\''+e.data+'\',\''+(isA?'andamento':'finalizada')+'\')">Ver</button>';
         return '<div class="etapa-row"><div style="flex:1">'+
           '<div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700;letter-spacing:.3px">'+e.data+'</div>'+
-          '<div style="font-size:12px;color:var(--text-muted)">'+e.rodadas+' rodadas · '+e.jogadores+' jogadores</div>'+
+          '<div style="font-size:12px;color:var(--text-muted)">'+e.jogadores+' jogadores</div>'+
           '<span class="'+tc+'">'+e.status+'</span></div>'+
           '<div style="margin-left:8px">'+btns+'</div></div>';
       }).join('');
