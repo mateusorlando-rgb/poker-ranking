@@ -284,7 +284,22 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   </div>
 </div>
 
-<!-- MODAL JOGADORES -->
+<!-- MODAL CONFIRMAR -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal-box" style="border-radius:20px;padding:24px 20px 20px">
+    <div class="modal-title" id="confirm-msg" style="font-size:16px;margin-bottom:20px;font-weight:600;font-family:'Inter',sans-serif"></div>
+    <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
+    <button class="btn btn-outline" onclick="fecharConfirm()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL ALERTA -->
+<div class="modal-overlay" id="modal-alert">
+  <div class="modal-box" style="border-radius:20px;padding:24px 20px 20px">
+    <div class="modal-title" id="alert-msg" style="font-size:16px;margin-bottom:20px;font-weight:600;font-family:'Inter',sans-serif"></div>
+    <button class="btn btn-gold" onclick="fecharAlert()">OK</button>
+  </div>
+</div>
 <div class="modal-overlay" id="modal-jogadores">
   <div class="modal-box">
     <div class="modal-title">Adicionar jogador</div>
@@ -349,7 +364,7 @@ function carregarRanking(){
 }
 
 function mostrarRecorde(){
-  alert('🏆 Recorde anual\n'+recordeAtual.fichas.toLocaleString('pt-BR')+' fichas\n'+recordeAtual.jogador);
+  abrirAlert('🏆 Recorde anual: '+recordeAtual.fichas.toLocaleString('pt-BR')+' fichas ('+recordeAtual.jogador+')');
 }
 
 function renderRanking(lista){
@@ -578,14 +593,15 @@ function continuarAndamento(data){
         etapaAtual=found.dados; etapaAtual.data=data;
         rodadaAtual=Math.max(0,etapaAtual.rodadas.length-1);
         renderRodada(); showScreen('rodada');
-      } else { alert('Dados não encontrados.'); }
+      } else { abrirAlert('Dados não encontrados.'); }
     });
 }
 function deletarAndamento(data){
-  if(!confirm('Excluir etapa em andamento ('+data+')?')) return;
-  fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({acao:'excluirRascunho',data:data})
-  }).then(function(){ setTimeout(function(){ carregarEtapas(); carregarAdmin(); },1500); });
+  abrirConfirm('Excluir etapa em andamento ('+data+')?', function(){
+    fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({acao:'excluirRascunho',data:data})
+    }).then(function(){ setTimeout(function(){ carregarEtapas(); carregarAdmin(); },1500); });
+  });
 }
 
 // ── SELEÇÃO ───────────────────────────────────
@@ -616,7 +632,7 @@ function addNovoJogadorSelecao(){
   renderSelecao();
 }
 function confirmarSelecao(){
-  if(etapaAtual.jogadoresSelecionados.length<2){ alert('Selecione ao menos 2 jogadores.'); return; }
+  if(etapaAtual.jogadoresSelecionados.length<2){ abrirAlert('Selecione ao menos 2 jogadores.'); return; }
   etapaAtual.rodadas=[etapaAtual.jogadoresSelecionados.map(function(n){ return {nome:n,fichas:0}; })];
   rodadaAtual=0; salvarRascunho(etapaAtual); renderRodada(); showScreen('rodada');
 }
@@ -636,6 +652,25 @@ function abrirModalJogadores(){
   '<button class="btn btn-outline" onclick="addNovoJogadorRodada()">+ Novo jogador</button></div>';
   document.getElementById('modal-jogadores').classList.add('open');
 }
+// ── CONFIRM / ALERT CUSTOMIZADOS ─────────────
+var _confirmCallback=null;
+function abrirConfirm(msg,fn){
+  document.getElementById('confirm-msg').textContent=msg;
+  document.getElementById('confirm-ok').onclick=function(){ fecharConfirm(); fn(); };
+  document.getElementById('modal-confirm').classList.add('open');
+}
+function fecharConfirm(){ document.getElementById('modal-confirm').classList.remove('open'); }
+function abrirAlert(msg,fn){
+  document.getElementById('alert-msg').textContent=msg;
+  document.getElementById('modal-alert').classList.add('open');
+  document.getElementById('modal-alert')._cb=fn||null;
+}
+function fecharAlert(){
+  var cb=document.getElementById('modal-alert')._cb;
+  document.getElementById('modal-alert').classList.remove('open');
+  if(cb) cb();
+}
+
 function fecharModal(){ document.getElementById('modal-jogadores').classList.remove('open'); }
 function addJogadorDaLista(nome){ etapaAtual.rodadas[rodadaAtual].push({nome:nome,fichas:0}); fecharModal(); salvarRascunho(etapaAtual); renderRodada(); }
 function addNovoJogadorRodada(){
@@ -686,7 +721,13 @@ function addRodada(){
 }
 function finalizarRodada(){
   var total=etapaAtual.rodadas[rodadaAtual].reduce(function(a,j){ return a+j.fichas; },0);
-  if(total!==0&&!confirm('Total da rodada é '+total+' (deveria ser 0). Continuar?')) return;
+  if(total!==0){
+    abrirConfirm('Total da rodada é '+total+' (deveria ser 0). Continuar?', function(){ _finalizarRodadaExec(); });
+    return;
+  }
+  _finalizarRodadaExec();
+}
+function _finalizarRodadaExec(){
   var estadoAtual=JSON.parse(JSON.stringify(etapaAtual));
   var prev=etapaAtual.rodadas[rodadaAtual];
   etapaAtual.rodadas.push(prev.map(function(j){ return {nome:j.nome,fichas:0}; }));
@@ -700,12 +741,12 @@ function finalizarRodada(){
   renderRodada();
 }
 function cancelarEtapa(){
-  if(confirm('Cancelar e descartar esta etapa?')){
+  abrirConfirm('Cancelar e descartar esta etapa?', function(){
     fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
       body:JSON.stringify({acao:'excluirRascunho',data:etapaAtual.data})});
     etapaAtual={data:"",rodadas:[],jogadoresSelecionados:[]};
     showScreen('admin');
-  }
+  });
 }
 
 // ── RESULTADO ─────────────────────────────────
@@ -756,11 +797,12 @@ function salvarEtapa(){
     body:JSON.stringify({acao:'salvarEtapa',data:etapaAtual.data,rodadas:etapaAtual.rodadas,ranking:r.ranking,maiorStack:r.maiorStack,novoRecorde:r.novoRecorde,recordeAtual:recordeAtual})
   }).then(function(){
     if(r.novoRecorde){ recordeAtual=r.novoRecorde.nome!==recordeAtual.jogador?{fichas:r.novoRecorde.fichas,jogador:r.novoRecorde.nome}:{fichas:r.novoRecorde.fichas,jogador:recordeAtual.jogador}; }
-    alert('Etapa '+etapaAtual.data+' salva com sucesso!');
-    etapaAtual={data:"",rodadas:[],jogadoresSelecionados:[]};
-    setTimeout(function(){ carregarRanking(); carregarEtapas(); },3000);
-    showScreen('ranking');
-  }).catch(function(){ alert('Erro ao salvar. Tente novamente.'); })
+    abrirAlert('Etapa '+etapaAtual.data+' salva com sucesso!', function(){
+      etapaAtual={data:"",rodadas:[],jogadoresSelecionados:[]};
+      setTimeout(function(){ carregarRanking(); carregarEtapas(); },3000);
+      showScreen('ranking');
+    });
+  }).catch(function(){ abrirAlert('Erro ao salvar. Tente novamente.'); })
   .finally(function(){ btn.textContent='Confirmar e salvar no ranking'; btn.disabled=false; });
 }
 </script>
