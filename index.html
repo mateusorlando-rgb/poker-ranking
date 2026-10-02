@@ -28,7 +28,9 @@
   --radius:14px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Inter',sans-serif;background:var(--felt);color:var(--text);min-height:100dvh;display:flex;flex-direction:column}
+html{height:100%}
+body{font-family:'Inter',sans-serif;background:var(--felt);color:var(--text);height:100%;height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+.topbar,.nav{flex-shrink:0}
 
 /* TOPBAR */
 .topbar{background:var(--felt2);padding:env(safe-area-inset-top,14px) 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--card-border)}
@@ -47,7 +49,13 @@ body{font-family:'Inter',sans-serif;background:var(--felt);color:var(--text);min
 .nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
 
 /* CONTENT */
-.content{flex:1;padding:10px;overflow-y:auto}
+.content{flex:1;min-height:0;padding:10px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+/* barra de ações fixa no rodapé da área rolável: sempre visível */
+.acoes{position:sticky;bottom:-10px;margin:8px -10px -10px;padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(to bottom,rgba(13,40,24,0),var(--felt) 14px);z-index:5}
+.acoes .linha{display:flex;gap:8px}.acoes .linha .btn{margin-top:0}
+.acoes .btn{margin-top:6px}
+.link-tela-cheia{display:none;font-size:11px;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,.4);border-radius:6px;padding:3px 7px;margin-top:4px;align-self:flex-start}
+.embutido .link-tela-cheia{display:inline-block}
 .screen{display:none}.screen.active{display:block}
 
 /* LISTA DE RANKING */
@@ -182,6 +190,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   <div class="topbar-left">
     <div class="topbar-title"><span>APT</span> Poker Ranking</div>
     <div class="topbar-sub" id="etapa-label">Carregando...</div>
+    <a class="link-tela-cheia" href="https://mateusorlando-rgb.github.io/poker-ranking/" target="_blank" rel="noopener">⤢ Abrir em tela cheia</a>
   </div>
   <div id="recorde-bar" style="display:none" onclick="mostrarRecorde()">
     <div class="recorde-badge">
@@ -246,8 +255,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       </div>
       <div id="lista-selecao"></div>
     </div>
-    <button class="btn btn-gold" onclick="confirmarSelecao()">Iniciar rodadas →</button>
-    <button class="btn btn-outline" onclick="showScreen('admin')">Voltar</button>
+    <div class="acoes"><div class="linha">
+      <button class="btn btn-outline" style="flex:1" onclick="showScreen('admin')">Voltar</button>
+      <button class="btn btn-gold" style="flex:2" onclick="confirmarSelecao()">Iniciar rodadas →</button>
+    </div></div>
   </div>
 
   <!-- RODADA -->
@@ -262,9 +273,11 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       </div>
       <div id="jogadores-rodada"></div>
     </div>
-    <button class="btn btn-gold" onclick="finalizarRodada()">Próxima rodada →</button>
-    <button class="btn btn-outline" onclick="verResultado()">Ver resultado da etapa</button>
     <button class="btn btn-danger" onclick="cancelarEtapa()">Cancelar etapa</button>
+    <div class="acoes"><div class="linha">
+      <button class="btn btn-outline" style="flex:1" onclick="verResultado()">Resultado</button>
+      <button class="btn btn-gold" style="flex:2" onclick="finalizarRodada()">Próxima rodada →</button>
+    </div></div>
   </div>
 
   <!-- RESULTADO -->
@@ -275,8 +288,10 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     </div>
     <div class="card"><div class="card-title" id="res-titulo"></div><div id="resultado-list"></div></div>
     <div id="extra-resultado" style="margin-bottom:8px"></div>
-    <button class="btn btn-gold" onclick="confirmarFinalizacao()">Finalizar etapa e salvar no ranking</button>
-    <button class="btn btn-outline" onclick="showScreen('rodada')">Voltar às rodadas</button>
+    <div class="acoes">
+      <button class="btn btn-gold" onclick="confirmarFinalizacao()">Finalizar etapa e salvar no ranking</button>
+      <button class="btn btn-outline" onclick="showScreen('rodada')">Voltar às rodadas</button>
+    </div>
   </div>
 
 </div>
@@ -391,12 +406,16 @@ function pontuarEtapa(rodadas){
   return {ranking:lista,maiorStack:{valor:stackVal||0,nomes:Object.keys(stack)}};
 }
 
-window.onload=function(){ carregarInicio(); };
+window.onload=function(){
+  try{ if(window.self!==window.top) document.body.classList.add('embutido'); }catch(e){ document.body.classList.add('embutido'); }
+  carregarInicio();
+};
 
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
   document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
   document.getElementById('s-'+id).classList.add('active');
+  var ct=document.querySelector('.content'); if(ct) ct.scrollTop=0;
   var map={ranking:0,etapas:1};
   if(map[id]!==undefined) document.querySelectorAll('.nav-btn')[map[id]].classList.add('active');
   if(['admin','selecao','rodada','resultado'].indexOf(id)>-1) document.querySelectorAll('.nav-btn')[2].classList.add('active');
