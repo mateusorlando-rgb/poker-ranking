@@ -134,6 +134,9 @@ body{font-family:'Inter',sans-serif;background:var(--felt);color:var(--text);min
 .fichas-input.zero{border-color:var(--card-border);background:var(--felt3);color:var(--text-muted)}
 .fichas-label{font-size:10px;color:var(--text-muted);margin-top:2px;text-align:right}
 .fichas-wrap{display:flex;flex-direction:column;align-items:flex-end}
+.fichas-linha{display:flex;align-items:center;gap:6px}
+.btn-sinal{width:38px;height:36px;border-radius:8px;border:1.5px solid var(--card-border);background:var(--felt3);color:var(--text);font-size:18px;font-weight:700;cursor:pointer;flex-shrink:0}
+.btn-sinal:active{opacity:.7}
 
 /* SELEÇÃO */
 .check-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--card-border);cursor:pointer;user-select:none}
@@ -272,7 +275,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     </div>
     <div class="card"><div class="card-title" id="res-titulo"></div><div id="resultado-list"></div></div>
     <div id="extra-resultado" style="margin-bottom:8px"></div>
-    <button class="btn btn-gold" onclick="salvarEtapa()">Confirmar e salvar no ranking</button>
+    <button class="btn btn-gold" onclick="confirmarFinalizacao()">Finalizar etapa e salvar no ranking</button>
     <button class="btn btn-outline" onclick="showScreen('rodada')">Voltar às rodadas</button>
   </div>
 
@@ -293,7 +296,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 <!-- MODAL CONFIRMAR -->
 <div class="modal-overlay" id="modal-confirm">
   <div class="modal-box" style="border-radius:20px;padding:24px 20px 20px">
-    <div class="modal-title" id="confirm-msg" style="font-size:16px;margin-bottom:20px;font-weight:600;font-family:'Inter',sans-serif"></div>
+    <div class="modal-title" id="confirm-msg" style="font-size:16px;margin-bottom:20px;font-weight:600;font-family:'Inter',sans-serif;white-space:pre-line"></div>
     <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
     <button class="btn btn-outline" onclick="fecharConfirm()">Cancelar</button>
   </div>
@@ -724,7 +727,8 @@ function addNovoJogadorRodada(){
 }
 
 // ── CONFIRM / ALERT ───────────────────────────
-function abrirConfirm(msg,fn){
+function abrirConfirm(msg,fn,rotulo){
+  document.getElementById('confirm-ok').textContent=rotulo||'Confirmar';
   document.getElementById('confirm-msg').textContent=msg;
   document.getElementById('confirm-ok').onclick=function(){ fecharConfirm(); fn(); };
   document.getElementById('modal-confirm').classList.add('open');
@@ -751,14 +755,31 @@ function renderRodada(){
     var v=j.fichas, cls=v>0?'pos':v<0?'neg':'zero';
     return '<div class="player-row">'+
       '<div style="flex:1;font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:700">'+esc(j.nome)+'</div>'+
-      '<div class="fichas-wrap"><input class="fichas-input '+cls+'" type="number" inputmode="numeric" placeholder="—" '+
-      (v!==0?'value="'+v+'"':'')+' oninput="atualizarFicha('+i+',this)">'+
-      '<div class="fichas-label">fichas</div></div></div>';
+      '<div class="fichas-wrap"><div class="fichas-linha">'+
+      '<button class="btn-sinal" type="button" title="Inverter sinal" onclick="inverterSinal('+i+')">±</button>'+
+      '<input class="fichas-input '+cls+'" id="ficha-'+i+'" type="text" inputmode="numeric" autocomplete="off" placeholder="—" '+
+      (v!==0?'value="'+v+'"':'')+' oninput="atualizarFicha('+i+',this)"></div>'+
+      '<div class="fichas-label">fichas · ± p/ negativo</div></div></div>';
   }).join('');
   atualizarSaldo();
 }
+function lerFichas(txt){
+  txt=String(txt||'').replace(/[−–]/g,'-');
+  var neg=txt.trim().charAt(0)==='-';
+  var dig=txt.replace(/\D/g,'');
+  var v=dig?parseInt(dig,10):0;
+  return neg?-v:v;
+}
+function inverterSinal(i){
+  var j=etapaAtual.rodadas[rodadaAtual][i];
+  var el=document.getElementById('ficha-'+i);
+  var v=lerFichas(el.value);
+  if(!v){ el.value='-'; el.focus(); return; }   // vazio: já começa com o sinal
+  el.value=String(-v);
+  atualizarFicha(i,el);
+}
 function atualizarFicha(i,el){
-  var v=parseInt(el.value,10)||0;
+  var v=lerFichas(el.value);
   etapaAtual.rodadas[rodadaAtual][i].fichas=v;
   el.className='fichas-input '+(v>0?'pos':v<0?'neg':'zero');
   atualizarSaldo();
@@ -831,6 +852,16 @@ function verResultado(){
   else apiGet('recorde').then(aplicarRecorde).catch(function(){}).then(mostrar);
 }
 
+function confirmarFinalizacao(){
+  var r=calcularResultado();
+  if(!r.rodadas.length){ abrirAlert('Nenhuma rodada com fichas lançadas.'); return; }
+  var vazias=etapaAtual.rodadas.length-r.rodadas.length;
+  abrirConfirm('⚠️ Finalizar a etapa '+etapaAtual.data+'?\n\n'+
+    r.rodadas.length+' rodada(s) · '+r.ranking.length+' jogadores'+
+    (vazias?'\n('+vazias+' rodada(s) sem fichas serão ignoradas)':'')+
+    '\n\nDepois de finalizada, NÃO será possível lançar novas rodadas. Se o jogo ainda não terminou, toque em Cancelar.',
+    salvarEtapa,'Sim, finalizar etapa');
+}
 function salvarEtapa(){
   var r=calcularResultado();
   if(!r.rodadas.length){ abrirAlert('Nenhuma rodada com fichas lançadas.'); return; }
@@ -850,7 +881,7 @@ function salvarEtapa(){
     sync.bloqueado=false;
     if(e.dados&&e.dados.pinInvalido){ acaoComPin(salvarEtapa); return; }
     abrirAlert('Erro ao salvar: '+e.message+'. Nada foi perdido — tente novamente.');
-  }).then(function(){ btn.textContent='Confirmar e salvar no ranking'; btn.disabled=false; });
+  }).then(function(){ btn.textContent='Finalizar etapa e salvar no ranking'; btn.disabled=false; });
 }
 </script>
 </body>
