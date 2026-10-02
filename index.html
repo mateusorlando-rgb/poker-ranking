@@ -317,13 +317,15 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
 <script>
 var API_URL   = "https://script.google.com/macros/s/AKfycbyZ2kM5CAwPktGTe7ANp2fdBlagQJfwNDDB4VyCla8_UH7hfaSN-BrBuxT4H7ZPcUulfw/exec";
-var PIN_ADMIN = "1274";
 
 var TODAS_ETAPAS=["10/jan","30/jan","20/fev","28/fev","13/mar","27/mar","10/abr","24/abr","08/mai","29/mai","12/jun","28/jun","10/jul","31/jul","14/ago","28/ago","11/set","25/set","16/out","30/out","13/nov","27/nov","11/dez"];
 var PONTOS=[25,18,15,12,10,8,6,4,2];
 function getPontos(pos){ return pos<=PONTOS.length?PONTOS[pos-1]:1; }
 
-var isAdmin=sessionStorage.getItem('pokerAdmin')==='1';
+var adminPin=lerPin();
+var isAdmin=!!adminPin;
+function lerPin(){ try{ return sessionStorage.getItem('pokerPin')||''; }catch(e){ return ''; } }
+function gravarPin(p){ try{ if(p) sessionStorage.setItem('pokerPin',p); else sessionStorage.removeItem('pokerPin'); sessionStorage.removeItem('pokerAdmin'); }catch(e){} }
 var rodadaAtual=0, jogadoresCadastrados=[];
 var etapaAtual=novaEtapa();
 var recordeAtual={fichas:0,jogador:"",etapa:""}, recordeCarregado=false;
@@ -353,7 +355,13 @@ function apiGet(acao,params){
 }
 // Sem mode:'no-cors' → o app lê a resposta e sabe se realmente salvou.
 function apiPost(body){
-  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(lerResposta);
+  body.pin=adminPin;
+  return fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)})
+    .then(lerResposta)
+    .catch(function(e){
+      if(e.dados&&e.dados.pinInvalido&&body.acao!=='verificarPin'){ isAdmin=false; adminPin=''; gravarPin(''); }
+      throw e;
+    });
 }
 
 // ── REGRAS (espelho do Apps Script) ───────────
@@ -528,19 +536,26 @@ function pedirPin(){
 }
 function fecharPin(){ document.getElementById('pin-overlay').classList.remove('open'); acaoPendente=null; }
 function verificarPin(){
-  if(document.getElementById('pin-input').value===PIN_ADMIN){
-    isAdmin=true; sessionStorage.setItem('pokerAdmin','1');
+  var pin=document.getElementById('pin-input').value.trim();
+  if(!pin){ document.getElementById('pin-err').textContent='Digite o PIN.'; return; }
+  var btn=document.querySelector('#pin-overlay .btn-gold');
+  btn.disabled=true; btn.textContent='Conferindo...';
+  document.getElementById('pin-err').textContent='';
+  adminPin=pin;
+  apiPost({acao:'verificarPin'}).then(function(){
+    isAdmin=true; gravarPin(pin);
     document.getElementById('pin-overlay').classList.remove('open');
     carregarJogadores();
     var fn=acaoPendente; acaoPendente=null;
     if(fn) fn(); else carregarAdmin();
-  } else {
-    document.getElementById('pin-err').textContent='PIN incorreto.';
+  }).catch(function(e){
+    adminPin=''; isAdmin=false;
+    document.getElementById('pin-err').textContent=(e.dados&&e.dados.erro)||'Sem conexão. Tente novamente.';
     document.getElementById('pin-input').value='';
-  }
+  }).then(function(){ btn.disabled=false; btn.textContent='Entrar'; });
 }
 document.getElementById('pin-input').addEventListener('keydown',function(e){ if(e.key==='Enter') verificarPin(); });
-function sairAdmin(){ isAdmin=false; sessionStorage.removeItem('pokerAdmin'); showScreen('ranking'); }
+function sairAdmin(){ isAdmin=false; adminPin=''; gravarPin(''); showScreen('ranking'); }
 
 function carregarJogadores(){
   apiGet('jogadores').then(function(d){ jogadoresCadastrados=d.jogadores||[]; }).catch(function(){});
@@ -601,6 +616,10 @@ function salvarRascunho(imediato){
     .catch(function(e){
       if(e.dados&&e.dados.finalizada){ sync.bloqueado=true; setStatusSync(''); return; }
       setStatusSync('erro');
+      if(e.dados&&e.dados.pinInvalido){
+        // PIN expirou/inválido: pede de novo e reenvia (o backup local garante que nada se perde)
+        acaoComPin(function(){ salvarRascunho(true); });
+      }
     })
     .then(function(){
       sync.emVoo=false;
@@ -829,6 +848,7 @@ function salvarEtapa(){
     carregarInicio();
   }).catch(function(e){
     sync.bloqueado=false;
+    if(e.dados&&e.dados.pinInvalido){ acaoComPin(salvarEtapa); return; }
     abrirAlert('Erro ao salvar: '+e.message+'. Nada foi perdido — tente novamente.');
   }).then(function(){ btn.textContent='Confirmar e salvar no ranking'; btn.disabled=false; });
 }
