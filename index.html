@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0D2818">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -45,8 +45,9 @@ body{font-family:'Inter',sans-serif;background:var(--felt);color:var(--text);hei
 
 /* NAV */
 .nav{display:flex;background:var(--felt2);border-bottom:1px solid var(--card-border);padding:0 8px}
-.nav-btn{flex:1;padding:11px 4px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border:none;background:transparent;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s}
+.nav-btn{flex:1;padding:11px 2px;font-family:'Barlow Condensed',sans-serif;font-size:14px;white-space:nowrap;font-weight:700;letter-spacing:.5px;text-transform:uppercase;border:none;background:transparent;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s}
 .nav-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.nav-btn.sair{flex:.7;color:var(--red)}
 
 /* CONTENT */
 .content{flex:1;min-height:0;padding:10px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
@@ -136,7 +137,7 @@ body{font-family:'Inter',sans-serif;background:var(--felt);color:var(--text);hei
 .saldo-err{background:rgba(242,107,107,.1);color:var(--red);border:1px solid rgba(242,107,107,.2)}
 .player-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--card-border)}
 .player-row:last-child{border-bottom:none}
-.fichas-input{-webkit-appearance:none;appearance:none;width:90px;min-width:90px;height:36px;border:1.5px solid var(--card-border);border-radius:8px;padding:7px 10px;font-size:14px;text-align:center;background:var(--felt3);color:var(--text);font-weight:600;display:block}
+.fichas-input{-webkit-appearance:none;appearance:none;width:90px;min-width:90px;height:36px;border:1.5px solid var(--card-border);border-radius:8px;padding:6px 8px;font-size:16px;text-align:center;background:var(--felt3);color:var(--text);font-weight:600;display:block}
 .fichas-input.pos{border-color:var(--green-bright);background:rgba(74,222,128,.1);color:var(--green-bright)}
 .fichas-input.neg{border-color:var(--red);background:rgba(242,107,107,.1);color:var(--red)}
 .fichas-input.zero{border-color:var(--card-border);background:var(--felt3);color:var(--text-muted)}
@@ -172,11 +173,12 @@ body{font-family:'Inter',sans-serif;background:var(--felt);color:var(--text);hei
 /* UTILITÁRIOS */
 .loader{text-align:center;padding:32px;color:var(--text-muted);font-size:14px}
 .empty{text-align:center;padding:32px 16px;color:var(--text-muted);font-size:14px}
-select{width:100%;padding:9px 12px;border:1px solid var(--card-border);border-radius:8px;font-size:14px;background:var(--felt3);color:var(--text);margin-bottom:10px}
+select{width:100%;padding:9px 12px;border:1px solid var(--card-border);border-radius:8px;font-size:16px;background:var(--felt3);color:var(--text);margin-bottom:10px}
 .field-label{font-size:13px;color:var(--text-muted);display:block;margin-bottom:4px}
 .avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;flex-shrink:0;background:var(--felt3);color:var(--text-muted);border:1px solid var(--card-border)}
 .badge-gold{background:rgba(201,168,76,.15);color:var(--gold);font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;display:inline-flex;align-items:center}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input,select,textarea{font-size:16px}  /* evita o zoom automático do iPhone ao tocar no campo */
 .sync-status{font-size:11px;color:var(--text-muted)}
 .sync-status.erro{color:var(--red);font-weight:600}
 .sync-status.ok{color:var(--green-bright)}
@@ -203,7 +205,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 <div class="nav">
   <button class="nav-btn active" onclick="showScreen('ranking')">Ranking</button>
   <button class="nav-btn" onclick="carregarEtapas();showScreen('etapas')">Etapas</button>
-  <button class="nav-btn" onclick="carregarAdminPublico()">Admin</button>
+  <button class="nav-btn" style="flex:1.3" onclick="carregarAdminPublico()">Nova etapa</button>
+  <button class="nav-btn sair" onclick="sairDoApp()">Sair</button>
 </div>
 
 <div class="content">
@@ -227,6 +230,24 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
     <div class="card"><div class="card-title" id="det-titulo"></div><div id="det-lista"></div></div>
     <div id="det-extra" style="margin-bottom:8px"></div>
     <button class="btn btn-outline" onclick="showScreen('etapas')">← Voltar</button>
+  </div>
+
+  <!-- NOVA ETAPA: apresentação + PIN -->
+  <div id="s-admin-intro" class="screen">
+    <div class="card" style="text-align:center;padding:22px 18px">
+      <div style="font-size:34px;margin-bottom:6px">🃏</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--gold2);letter-spacing:.5px;margin-bottom:10px">NOVA ETAPA</div>
+      <div style="font-size:14px;line-height:1.5;color:var(--text);text-align:left">
+        Área reservada ao organizador para <strong>registrar a etapa do dia</strong>:
+        <ul style="margin:10px 0 0 18px;color:var(--text-muted);font-size:13px;line-height:1.6">
+          <li>escolher a data e marcar os participantes;</li>
+          <li>lançar as fichas de cada rodada;</li>
+          <li>conferir o resultado e salvar no ranking.</li>
+        </ul>
+      </div>
+      <div class="info-box" style="margin:14px 0 0;text-align:left">🔐 O acesso exige o PIN do administrador. Para acompanhar a classificação e os resultados, use as abas <strong style="color:var(--text)">Ranking</strong> e <strong style="color:var(--text)">Etapas</strong>.</div>
+      <button class="btn btn-gold" style="margin-top:14px" onclick="pedirPin()">Entrar com PIN</button>
+    </div>
   </div>
 
   <!-- ADMIN -->
@@ -418,7 +439,7 @@ function showScreen(id){
   var ct=document.querySelector('.content'); if(ct) ct.scrollTop=0;
   var map={ranking:0,etapas:1};
   if(map[id]!==undefined) document.querySelectorAll('.nav-btn')[map[id]].classList.add('active');
-  if(['admin','selecao','rodada','resultado'].indexOf(id)>-1) document.querySelectorAll('.nav-btn')[2].classList.add('active');
+  if(['admin-intro','admin','selecao','rodada','resultado'].indexOf(id)>-1) document.querySelectorAll('.nav-btn')[2].classList.add('active');
 }
 
 // ── INÍCIO / RANKING ──────────────────────────
@@ -544,7 +565,10 @@ function renderDetalhe(d,parcial){
 }
 
 // ── PIN / ADMIN ───────────────────────────────
-function carregarAdminPublico(){ carregarJogadores(); carregarAdmin(); }
+function carregarAdminPublico(){
+  if(!isAdmin){ acaoPendente=null; showScreen('admin-intro'); return; }
+  carregarJogadores(); carregarAdmin();
+}
 
 function acaoComPin(fn){
   if(isAdmin){ fn(); return; }
@@ -577,6 +601,23 @@ function verificarPin(){
   }).then(function(){ btn.disabled=false; btn.textContent='Entrar'; });
 }
 document.getElementById('pin-input').addEventListener('keydown',function(e){ if(e.key==='Enter') verificarPin(); });
+var URL_SITE="https://sites.google.com/view/ranking-apt";
+function sairDoApp(){
+  var temEtapa=etapaAtual&&etapaAtual.data&&etapaAtual.rodadas&&etapaAtual.rodadas.length;
+  abrirConfirm('Sair do aplicativo?'+(isAdmin?'\n\nO modo administrador será encerrado e o PIN será pedido novamente na próxima vez.':'')+
+    (temEtapa?'\n\nA etapa em andamento continua salva e pode ser retomada depois.':''),
+    function(){
+      // garante que a última alteração da rodada foi enviada antes de sair
+      if(sync.timer&&etapaAtual.data&&!sync.bloqueado) salvarRascunho(true);
+      aguardarSync().then(function(){
+        isAdmin=false; adminPin=''; gravarPin('');
+        showScreen('ranking');
+        try{ window.close(); }catch(e){}
+        // Se o navegador não permitir fechar a janela, volta para o site do APT
+        setTimeout(function(){ window.location.href=URL_SITE; },300);
+      });
+    },'Sair');
+}
 function sairAdmin(){ isAdmin=false; adminPin=''; gravarPin(''); showScreen('ranking'); }
 
 function carregarJogadores(){
